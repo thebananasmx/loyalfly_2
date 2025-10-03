@@ -171,12 +171,23 @@
                     <div><label for="stamps-required" class="block text-sm font-medium text-subtle-text">Sellos Requeridos</label><input type="number" id="stamps-required" class="mt-1 block w-full rounded-md bg-dark-bg border-dark-surface shadow-sm focus:border-menta focus:ring-menta"></div>
                     <div>
                         <label class="block text-sm font-medium text-subtle-text">Color de la Tarjeta</label>
-                        <div id="color-swatches" class="mt-2 flex space-x-2">
-                            <button data-color="#27272A" class="h-8 w-8 rounded-full border-2 border-transparent ring-2 ring-light-text" style="background-color: #27272A;"></button>
-                            <button data-color="#57534E" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #57534E;"></button>
-                            <button data-color="#1E40AF" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #1E40AF;"></button>
-                            <button data-color="#BE123C" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #BE123C;"></button>
-                            <button data-color="#0F766E" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #0F766E;"></button>
+                        <div class="mt-2 flex items-center space-x-3">
+                            <div id="color-swatches" class="flex flex-wrap gap-2">
+                                <button data-color="#27272A" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #27272A;" aria-label="Gris Oscuro"></button>
+                                <button data-color="#57534E" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #57534E;" aria-label="Piedra"></button>
+                                <button data-color="#1E40AF" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #1E40AF;" aria-label="Azul Intenso"></button>
+                                <button data-color="#BE123C" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #BE123C;" aria-label="Rojo Carmesí"></button>
+                                <button data-color="#0F766E" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #0F766E;" aria-label="Verde Teal"></button>
+                                <button data-color="#86198F" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #86198F;" aria-label="Púrpura"></button>
+                                <button data-color="#B45309" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #B45309;" aria-label="Ámbar"></button>
+                            </div>
+                            <label for="custom-color-picker" class="relative h-8 w-8 rounded-full border-2 border-subtle-text cursor-pointer flex items-center justify-center shrink-0" aria-label="Seleccionar color personalizado">
+                                <div id="custom-color-preview" class="w-full h-full rounded-full"></div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="absolute h-5 w-5 text-white/80 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v2a2 2 0 01-2 2H5zM14 3h4a2 2 0 012 2v4m0 8v4a2 2 0 01-2 2h-4a2 2 0 01-2-2v-2a2 2 0 012-2h4z"></path>
+                                </svg>
+                                <input type="color" id="custom-color-picker" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            </label>
                         </div>
                         <input type="hidden" id="card-color-input" value="#27272A">
                     </div>
@@ -353,7 +364,7 @@
                 const subTextColorClass = luminance > 0.5 ? 'text-zinc-600' : 'text-subtle-text';
 
                 return `
-                    <div class="rounded-xl shadow-lg p-5 flex flex-col justify-between h-56 ${textColorClass} ${isRewardReady ? 'ring-2 ring-oro-suave' : ''}" style="background-color: ${cardColor};">
+                    <div class="rounded-xl shadow-lg p-5 flex flex-col justify-between h-52 ${textColorClass} ${isRewardReady ? 'ring-2 ring-oro-suave' : ''}" style="background-color: ${cardColor};">
                         <header class="flex justify-between items-start">
                             <h3 class="uppercase tracking-wider text-lg font-bold">${program.name}</h3>
                             <div class="font-semibold text-menta">Loyalfly</div>
@@ -633,9 +644,17 @@
             
             const currentColor = state.userProfile.cardColor || '#27272A';
             document.getElementById('card-color-input').value = currentColor;
+            
+            const customColorPicker = document.getElementById('custom-color-picker');
+            const customColorPreview = document.getElementById('custom-color-preview');
+            customColorPicker.value = currentColor;
+            customColorPreview.style.backgroundColor = currentColor;
+
+            let isSwatchSelected = false;
             document.querySelectorAll('#color-swatches button').forEach(swatch => {
                 if (swatch.dataset.color === currentColor) {
                     swatch.classList.add('ring-2', 'ring-light-text');
+                    isSwatchSelected = true;
                 } else {
                     swatch.classList.remove('ring-2', 'ring-light-text');
                 }
@@ -768,7 +787,19 @@
                     document.getElementById('card-color-input').value = selectedColor;
                     document.querySelectorAll('#color-swatches button').forEach(s => s.classList.remove('ring-2', 'ring-light-text'));
                     swatch.classList.add('ring-2', 'ring-light-text');
+
+                    const customColorPicker = document.getElementById('custom-color-picker');
+                    const customColorPreview = document.getElementById('custom-color-preview');
+                    customColorPicker.value = selectedColor;
+                    customColorPreview.style.backgroundColor = selectedColor;
                 });
+            });
+
+            document.getElementById('custom-color-picker').addEventListener('input', (e) => {
+                const selectedColor = e.target.value;
+                document.getElementById('card-color-input').value = selectedColor;
+                document.getElementById('custom-color-preview').style.backgroundColor = selectedColor;
+                document.querySelectorAll('#color-swatches button').forEach(s => s.classList.remove('ring-2', 'ring-light-text'));
             });
 
             document.getElementById('go-to-register').addEventListener('click', (e) => { e.preventDefault(); showView('registration-view'); });
