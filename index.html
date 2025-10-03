@@ -13,6 +13,12 @@
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./images/icon-192x192.png">
 
+    <!-- Meta etiquetas específicas para iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Loyalfly">
+
+
     <!-- Estilos personalizados para la paleta de colores -->
     <script>
         tailwind.config = {
@@ -46,9 +52,35 @@
         ::placeholder {
             color: #52525B; /* zinc-600 */
         }
+
+        /* Estilos para la pantalla de bienvenida (Splash Screen) */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #18181B;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease-out;
+        }
+        #splash-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="text-light-text antialiased">
+
+    <!-- Pantalla de Bienvenida (Splash Screen) -->
+    <div id="splash-screen">
+        <h1 class="text-5xl font-bold text-menta">Loyalfly</h1>
+        <p class="text-subtle-text mt-2">Cargando tu cartera...</p>
+    </div>
 
     <!-- Contenedor principal de la aplicación -->
     <div id="app" class="max-w-md mx-auto min-h-screen bg-dark-bg shadow-lg">
@@ -302,6 +334,7 @@
         const rewardConfigBtn = document.getElementById('reward-config-btn');
         const saveRewardBtn = document.getElementById('save-reward-btn');
         const cancelRewardBtn = document.getElementById('cancel-reward-btn');
+        const splashScreen = document.getElementById('splash-screen');
 
         // Contenedores
         const cardsContainer = document.getElementById('cards-container');
@@ -602,6 +635,11 @@
             phoneInput.addEventListener('keypress', (e) => e.key === 'Enter' && handleClientLogin());
             registerPhoneInput.addEventListener('keypress', (e) => e.key === 'Enter' && handleRegistration());
             otpInput.addEventListener('keypress', (e) => e.key === 'Enter' && handleOtpVerification());
+
+            // Ocultar splash screen
+            setTimeout(() => {
+                splashScreen.classList.add('hidden');
+            }, 500);
         };
 
         init();

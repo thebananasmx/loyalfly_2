@@ -1,7 +1,10 @@
 const CACHE_NAME = 'loyalfly-cache-v1';
 const urlsToCache = [
     './',
-    './index.html'
+    './index.html',
+    './manifest.json',
+    './images/icon-192x192.png',
+    './images/icon-512x512.png'
 ];
 
 self.addEventListener('install', event => {
