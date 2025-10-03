@@ -5,259 +5,233 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loyalfly - Cartera de Lealtad</title>
     
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Configuración PWA -->
     <meta name="theme-color" content="#34D399">
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./images/icon-192x192.png">
-
-    <!-- Meta etiquetas específicas para iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Loyalfly">
 
-
-    <!-- Estilos personalizados para la paleta de colores -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'dark-bg': '#18181B', // zinc-900
-                        'dark-surface': '#27272A', // zinc-800
-                        'menta': '#34D399',
-                        'oro-suave': '#FBBF24',
-                        'light-text': '#F4F4F5', // zinc-100
-                        'subtle-text': '#A1A1AA', // zinc-400
+                        'dark-bg': '#18181B', 'dark-surface': '#27272A', 'menta': '#34D399',
+                        'oro-suave': '#FBBF24', 'light-text': '#F4F4F5', 'subtle-text': '#A1A1AA',
                     }
                 }
             }
         }
     </script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            background-color: #18181B; /* dark-bg */
-        }
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        /* Estilos para placeholder en modo oscuro */
-        ::placeholder {
-            color: #52525B; /* zinc-600 */
-        }
-
-        /* Estilos para la pantalla de bienvenida (Splash Screen) */
-        #splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #18181B;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.5s ease-out;
-        }
-        #splash-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #18181B; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        ::placeholder { color: #52525B; }
+        #splash-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #18181B; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease-out; }
+        #splash-screen.hidden { opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body class="text-light-text antialiased">
 
-    <!-- Pantalla de Bienvenida (Splash Screen) -->
     <div id="splash-screen">
         <h1 class="text-5xl font-bold text-menta">Loyalfly</h1>
         <p class="text-subtle-text mt-2">Cargando tu cartera...</p>
     </div>
 
-    <!-- Contenedor principal de la aplicación -->
     <div id="app" class="max-w-md mx-auto min-h-screen bg-dark-bg shadow-lg">
 
-        <!-- VISTA: LOGIN DE CLIENTE -->
-        <div id="client-login-view" class="flex flex-col items-center justify-center min-h-screen p-8">
-            <h1 class="text-5xl font-bold text-menta mb-2">Loyalfly</h1>
-            <p class="text-subtle-text mb-12">Tu cartera de lealtad digital.</p>
-            <div class="w-full">
-                <label for="phone-input" class="block text-sm font-medium text-subtle-text mb-2">Tu número de teléfono</label>
-                <div class="relative rounded-md shadow-sm">
-                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <span class="text-subtle-text sm:text-sm">+52</span>
-                    </div>
-                    <input type="tel" id="phone-input" class="block w-full rounded-lg bg-dark-surface border-dark-surface pl-12 py-3 focus:border-menta focus:ring-menta sm:text-lg">
-                </div>
-            </div>
-            <button id="login-btn" class="w-full bg-menta text-dark-bg py-3 px-4 mt-6 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition ease-in-out duration-300">
-                Consultar Mis Tarjetas
-            </button>
-            <div class="mt-8 text-center">
-                 <p class="text-sm text-subtle-text">
-                    ¿No tienes cuenta? <a href="#" id="go-to-register" class="font-semibold text-menta hover:underline">Regístrate aquí</a>
-                 </p>
-                 <a href="#" id="go-to-cashier" class="text-sm text-menta hover:underline mt-2 inline-block">Soy un negocio</a>
-            </div>
-        </div>
-        
-        <!-- VISTA: REGISTRO EN SUCURSAL -->
-        <div id="registration-view" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
-            <h1 class="text-3xl font-bold text-menta mb-2">Registro Nuevo</h1>
-            <p class="text-subtle-text mb-8">Crea tu cuenta para ganar recompensas.</p>
-            <div class="w-full space-y-4">
-                 <div>
-                    <label for="register-name-input" class="block text-sm font-medium text-subtle-text mb-2">Nombre completo</label>
-                    <input type="text" id="register-name-input" class="block w-full rounded-lg bg-dark-surface border-dark-surface py-3 px-4 focus:border-menta focus:ring-menta sm:text-lg" placeholder="Ej. Ana Torres">
-                </div>
-                <div>
-                    <label for="register-phone-input" class="block text-sm font-medium text-subtle-text mb-2">Tu número de teléfono</label>
+        <!-- VISTAS DE AUTENTICACIÓN -->
+        <div id="auth-container">
+            <!-- VISTA: LOGIN DE CLIENTE -->
+            <div id="client-login-view" class="flex flex-col items-center justify-center min-h-screen p-8">
+                <h1 class="text-5xl font-bold text-menta mb-2">Loyalfly</h1>
+                <p class="text-subtle-text mb-12">Tu cartera de lealtad digital.</p>
+                <div class="w-full">
+                    <label for="phone-input" class="block text-sm font-medium text-subtle-text mb-2">Tu número de teléfono</label>
                     <div class="relative rounded-md shadow-sm">
-                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <span class="text-subtle-text sm:text-sm">+52</span>
-                        </div>
-                        <input type="tel" id="register-phone-input" class="block w-full rounded-lg bg-dark-surface border-dark-surface pl-12 py-3 focus:border-menta focus:ring-menta sm:text-lg" placeholder="55 1234 5678">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-subtle-text sm:text-sm">+52</span></div>
+                        <input type="tel" id="phone-input" class="block w-full rounded-lg bg-dark-surface border-dark-surface pl-12 py-3 focus:border-menta focus:ring-menta sm:text-lg" autocomplete="tel">
                     </div>
                 </div>
-            </div>
-            <button id="register-btn" class="w-full bg-menta text-dark-bg py-3 px-4 mt-6 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition ease-in-out duration-300">
-                Registrar y Crear Tarjeta
-            </button>
-            <div class="mt-8 text-center">
-                 <a href="#" id="go-to-login" class="text-sm text-menta hover:underline">Ya tengo una cuenta</a>
-            </div>
-        </div>
-
-        <!-- VISTA: DASHBOARD DE TARJETAS DE CLIENTE -->
-        <div id="dashboard-view" class="hidden flex flex-col h-screen">
-            <header class="sticky top-0 bg-dark-bg/80 backdrop-blur-sm p-4 border-b border-dark-surface flex justify-between items-center">
-                <h1 class="text-2xl font-bold text-menta">Loyalfly</h1>
-                <button id="logout-btn" class="text-sm text-menta hover:underline">Salir</button>
-            </header>
-            <main id="cards-container" class="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar pb-20">
-                <!-- Las tarjetas se insertarán aquí dinámicamente -->
-            </main>
-        </div>
-
-        <!-- VISTA: CAJERO -->
-        <div id="cashier-view" class="hidden flex flex-col h-screen">
-             <header class="sticky top-0 bg-dark-bg/80 backdrop-blur-sm p-4 border-b border-dark-surface flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-menta" id="business-name-header"></h1>
-                    <p class="text-sm text-subtle-text">Panel de Cajero</p>
+                <button id="login-btn" class="w-full bg-menta text-dark-bg py-3 px-4 mt-6 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition ease-in-out duration-300">Consultar Mis Tarjetas</button>
+                <div class="mt-8 text-center">
+                    <p class="text-sm text-subtle-text">¿No tienes cuenta? <a href="#" id="go-to-register" class="font-semibold text-menta hover:underline">Regístrate aquí</a></p>
+                    <a href="#" id="go-to-business-login" class="text-sm text-menta hover:underline mt-2 inline-block">Soy un negocio</a>
                 </div>
-                <div class="flex items-center">
-                    <button id="reward-config-btn" class="text-menta p-2 rounded-full hover:bg-dark-surface">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    </button>
-                    <button id="cashier-logout-btn" class="text-sm text-menta hover:underline ml-4">Salir</button>
+            </div>
+
+            <!-- VISTA: REGISTRO DE CLIENTE -->
+            <div id="registration-view" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
+                <h1 class="text-3xl font-bold text-menta mb-2">Registro Nuevo</h1>
+                <p class="text-subtle-text mb-8">Crea tu cuenta para ganar recompensas.</p>
+                <div class="w-full space-y-4">
+                    <div>
+                        <label for="register-name-input" class="block text-sm font-medium text-subtle-text mb-2">Nombre completo</label>
+                        <input type="text" id="register-name-input" class="block w-full rounded-lg bg-dark-surface border-dark-surface py-3 px-4 focus:border-menta focus:ring-menta sm:text-lg" placeholder="Ej. Ana Torres" autocomplete="name">
+                    </div>
+                    <div>
+                        <label for="register-phone-input" class="block text-sm font-medium text-subtle-text mb-2">Tu número de teléfono</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-subtle-text sm:text-sm">+52</span></div>
+                            <input type="tel" id="register-phone-input" class="block w-full rounded-lg bg-dark-surface border-dark-surface pl-12 py-3 focus:border-menta focus:ring-menta sm:text-lg" placeholder="55 1234 5678" autocomplete="tel">
+                        </div>
+                    </div>
                 </div>
-            </header>
-            <main id="clients-list-container" class="flex-grow overflow-y-auto p-2 no-scrollbar pb-20">
-                <!-- La lista de clientes se insertará aquí -->
-            </main>
+                <button id="register-btn" class="w-full bg-menta text-dark-bg py-3 px-4 mt-6 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition ease-in-out duration-300">Registrarme</button>
+                <div class="mt-8 text-center"><a href="#" id="go-to-login" class="text-sm text-menta hover:underline">Ya tengo una cuenta</a></div>
+            </div>
+            
+            <!-- VISTA: LOGIN DE NEGOCIO -->
+            <div id="business-login-view" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
+                <h1 class="text-3xl font-bold text-menta mb-2">Acceso de Negocio</h1>
+                <p class="text-subtle-text mb-8">Inicia sesión para administrar tus clientes.</p>
+                <div class="w-full space-y-4">
+                    <div>
+                        <label for="business-email-login" class="block text-sm font-medium text-subtle-text mb-2">Correo electrónico</label>
+                        <input type="email" id="business-email-login" class="block w-full rounded-lg bg-dark-surface border-dark-surface py-3 px-4 focus:border-menta focus:ring-menta sm:text-lg" autocomplete="email">
+                    </div>
+                    <div>
+                        <label for="business-password-login" class="block text-sm font-medium text-subtle-text mb-2">Contraseña</label>
+                        <input type="password" id="business-password-login" class="block w-full rounded-lg bg-dark-surface border-dark-surface py-3 px-4 focus:border-menta focus:ring-menta sm:text-lg" autocomplete="current-password">
+                    </div>
+                </div>
+                <button id="business-login-btn" class="w-full bg-menta text-dark-bg py-3 px-4 mt-6 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition">Iniciar Sesión</button>
+                <div class="mt-8 text-center">
+                    <p class="text-sm text-subtle-text">¿No tienes cuenta? <a href="#" id="go-to-business-register" class="font-semibold text-menta hover:underline">Regístrate aquí</a></p>
+                    <a href="#" id="go-to-client-login-from-business" class="text-sm text-menta hover:underline mt-2 inline-block">Soy un cliente</a>
+                </div>
+            </div>
+
+            <!-- VISTA: REGISTRO DE NEGOCIO -->
+            <div id="business-register-view" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
+                <h1 class="text-3xl font-bold text-menta mb-2">Registro de Negocio</h1>
+                <p class="text-subtle-text mb-8">Crea una cuenta para tu negocio.</p>
+                <div class="w-full space-y-4">
+                     <div>
+                        <label for="business-name-register" class="block text-sm font-medium text-subtle-text mb-2">Nombre del Negocio</label>
+                        <input type="text" id="business-name-register" class="block w-full rounded-lg bg-dark-surface border-dark-surface py-3 px-4 focus:border-menta focus:ring-menta sm:text-lg" autocomplete="organization">
+                    </div>
+                    <div>
+                        <label for="business-email-register" class="block text-sm font-medium text-subtle-text mb-2">Correo Electrónico</label>
+                        <input type="email" id="business-email-register" class="block w-full rounded-lg bg-dark-surface border-dark-surface py-3 px-4 focus:border-menta focus:ring-menta sm:text-lg" autocomplete="email">
+                    </div>
+                    <div>
+                        <label for="business-password-register" class="block text-sm font-medium text-subtle-text mb-2">Contraseña</label>
+                        <input type="password" id="business-password-register" class="block w-full rounded-lg bg-dark-surface border-dark-surface py-3 px-4 focus:border-menta focus:ring-menta sm:text-lg" autocomplete="new-password">
+                    </div>
+                </div>
+                <button id="business-register-btn" class="w-full bg-menta text-dark-bg py-3 px-4 mt-6 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition">Crear Cuenta de Negocio</button>
+                <div class="mt-8 text-center"><a href="#" id="go-to-business-login-from-register" class="text-sm text-menta hover:underline">Ya tengo una cuenta</a></div>
+            </div>
         </div>
 
-        <!-- MODAL: OTP -->
+        <!-- VISTAS DE LA APLICACIÓN (USUARIO LOGUEADO) -->
+        <div id="app-container" class="hidden">
+            <!-- VISTA: DASHBOARD DE TARJETAS DE CLIENTE -->
+            <div id="dashboard-view" class="hidden flex flex-col h-screen">
+                <header class="sticky top-0 bg-dark-bg/80 backdrop-blur-sm p-4 border-b border-dark-surface flex justify-between items-center"><h1 class="text-2xl font-bold text-menta">Loyalfly</h1><button id="client-logout-btn" class="text-sm text-menta hover:underline">Salir</button></header>
+                <main id="cards-container" class="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar pb-20"></main>
+            </div>
+
+            <!-- VISTA: CAJERO -->
+            <div id="cashier-view" class="hidden flex flex-col h-screen">
+                <header class="sticky top-0 bg-dark-bg/80 backdrop-blur-sm p-4 border-b border-dark-surface flex justify-between items-center">
+                    <div><h1 class="text-2xl font-bold text-menta" id="business-name-header"></h1><p class="text-sm text-subtle-text">Panel de Cajero</p></div>
+                    <div class="flex items-center">
+                        <button id="reward-config-btn" class="text-menta p-2 rounded-full hover:bg-dark-surface"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg></button>
+                        <button id="cashier-logout-btn" class="text-sm text-menta hover:underline ml-4">Salir</button>
+                    </div>
+                </header>
+                <main id="clients-list-container" class="flex-grow overflow-y-auto p-2 no-scrollbar pb-20"></main>
+            </div>
+        </div>
+
+        <!-- MODALES -->
         <div id="otp-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-40">
             <div class="bg-dark-surface rounded-lg shadow-xl p-8 w-full max-w-sm text-center">
                 <h2 class="text-xl font-bold text-menta mb-2">Verificación</h2>
-                <p class="text-subtle-text mb-6">Ingresa el código que te enviamos.</p>
-                <input type="text" id="otp-input" class="w-full text-center text-2xl tracking-[1em] rounded-lg bg-dark-bg border-dark-surface py-3 focus:border-menta focus:ring-menta" maxlength="4" placeholder="----">
-                <button id="otp-verify-btn" class="w-full bg-menta text-dark-bg py-3 px-4 mt-6 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition ease-in-out duration-300">
-                    Verificar
-                </button>
+                <p class="text-subtle-text mb-6">Ingresa el código que te enviamos por SMS.</p>
+                <input type="text" id="otp-input" class="w-full text-center text-2xl tracking-[1em] rounded-lg bg-dark-bg border-dark-surface py-3 focus:border-menta focus:ring-menta" maxlength="6" placeholder="------" autocomplete="one-time-code">
+                <button id="otp-verify-btn" class="w-full bg-menta text-dark-bg py-3 px-4 mt-6 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition">Verificar</button>
             </div>
         </div>
-        
-        <!-- MODAL: Configuración de Recompensa -->
         <div id="reward-config-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-40">
             <div class="bg-dark-surface rounded-lg shadow-xl p-8 w-full max-w-sm">
                 <h2 class="text-xl font-bold text-menta mb-4">Configurar Recompensa</h2>
                 <div class="space-y-4">
-                    <div>
-                        <label for="reward-title" class="block text-sm font-medium text-subtle-text">Título de la Recompensa</label>
-                        <input type="text" id="reward-title" class="mt-1 block w-full rounded-md bg-dark-bg border-dark-surface shadow-sm focus:border-menta focus:ring-menta">
-                    </div>
-                    <div>
-                        <label for="reward-description" class="block text-sm font-medium text-subtle-text">Descripción Detallada</label>
-                        <textarea id="reward-description" rows="3" class="mt-1 block w-full rounded-md bg-dark-bg border-dark-surface shadow-sm focus:border-menta focus:ring-menta"></textarea>
-                    </div>
+                    <div><label for="reward-title" class="block text-sm font-medium text-subtle-text">Título de la Recompensa</label><input type="text" id="reward-title" class="mt-1 block w-full rounded-md bg-dark-bg border-dark-surface shadow-sm focus:border-menta focus:ring-menta"></div>
+                    <div><label for="reward-description" class="block text-sm font-medium text-subtle-text">Descripción Detallada</label><textarea id="reward-description" rows="3" class="mt-1 block w-full rounded-md bg-dark-bg border-dark-surface shadow-sm focus:border-menta focus:ring-menta"></textarea></div>
+                    <div><label for="stamps-required" class="block text-sm font-medium text-subtle-text">Sellos Requeridos</label><input type="number" id="stamps-required" class="mt-1 block w-full rounded-md bg-dark-bg border-dark-surface shadow-sm focus:border-menta focus:ring-menta"></div>
                 </div>
-                <div class="mt-6 flex justify-end space-x-3">
-                    <button id="cancel-reward-btn" class="bg-zinc-600 text-light-text py-2 px-4 rounded-lg hover:bg-zinc-500 transition">Cancelar</button>
-                    <button id="save-reward-btn" class="bg-menta text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-green-300 transition">Guardar</button>
-                </div>
+                <div class="mt-6 flex justify-end space-x-3"><button id="cancel-reward-btn" class="bg-zinc-600 text-light-text py-2 px-4 rounded-lg hover:bg-zinc-500 transition">Cancelar</button><button id="save-reward-btn" class="bg-menta text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-green-300 transition">Guardar</button></div>
             </div>
         </div>
-
-        <!-- MODAL: Alerta General -->
         <div id="alert-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
             <div class="bg-dark-surface rounded-lg shadow-xl p-6 w-full max-w-sm text-center">
-                <div id="alert-icon-container" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-menta mb-4">
-                    <svg id="alert-icon-svg" class="h-6 w-6 text-dark-bg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <!-- El path del ícono se insertará aquí dinámicamente -->
-                    </svg>
-                </div>
+                <div id="alert-icon-container" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-menta mb-4"><svg id="alert-icon-svg" class="h-6 w-6 text-dark-bg" fill="none" viewBox="0 0 24 24" stroke="currentColor"></svg></div>
                 <h2 id="alert-title" class="text-xl font-bold text-light-text mb-2">Aviso</h2>
                 <p id="alert-message" class="text-subtle-text mb-6 px-4">Mensaje de la alerta.</p>
-                <button id="alert-ok-btn" class="w-full bg-menta text-dark-bg py-2 px-4 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition ease-in-out duration-300">
-                    Aceptar
-                </button>
+                <button id="alert-ok-btn" class="w-full bg-menta text-dark-bg py-2 px-4 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition">Aceptar</button>
             </div>
         </div>
-
     </div>
+    
+    <!-- Contenedor para reCAPTCHA, necesario para la verificación por SMS -->
+    <div id="recaptcha-container"></div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-
         // =================================================================
-        // SIMULACIÓN DE BASE DE DATOS Y ESTADO
+        // CONFIGURACIÓN DE FIREBASE
         // =================================================================
-        const DB_DATA = {
-            clientAccounts: [
-                { id: 'client_1', name: 'Ana Torres', phone: '5511223344' },
-                { id: 'client_2', name: 'Carlos Gomez', phone: '5522334455' },
-                { id: 'client_3', name: 'Sofia Luna', phone: '5533445566' },
-                { id: 'client_4', name: 'David Reyes', phone: '5544556677' },
-                { id: 'client_5', name: 'Maria Jose', phone: '5555667788' }
-            ],
-            businessPrograms: [
-                { id: 'business_1', name: 'Café C', stampsRequired: 10, rewardTitle: 'Café Americano Gratis', rewardDescription: 'Disfruta de un delicioso café americano de 12oz por tu lealtad.' },
-                { id: 'business_2', name: 'Café B', stampsRequired: 8, rewardTitle: '2x1 en Frappés', rewardDescription: 'Compra un frappé de cualquier sabor y llévate el segundo gratis.' }
-            ],
-            loyaltyBalances: [
-                { clientId: 'client_1', businessId: 'business_1', stamps: 7 },
-                { clientId: 'client_1', businessId: 'business_2', stamps: 3 },
-                { clientId: 'client_2', businessId: 'business_1', stamps: 10 },
-                { clientId: 'client_3', businessId: 'business_1', stamps: 2 },
-                { clientId: 'client_4', businessId: 'business_2', stamps: 8 },
-                { clientId: 'client_5', businessId: 'business_1', stamps: 5 }
-            ]
+        
+        /* 
+        TODO: PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE 
+        Este es un ejemplo, reemplázalo con el tuyo desde la consola de Firebase.
+        */
+        const firebaseConfig = {
+            apiKey: "AIza...",
+            authDomain: "your-project-id.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project-id.appspot.com",
+            messagingSenderId: "...",
+            appId: "1:..."
         };
 
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // =================================================================
+        // ESTADO GLOBAL DE LA APP
+        // =================================================================
         let state = {
-            currentView: 'client-login-view',
-            loggedInClientId: null,
-            loggedInBusinessId: 'business_1', // Simulación de cajero logueado para "Café C"
-            tempPhone: null
+            currentUser: null,
+            userProfile: null, // Almacenará datos de 'clients' o 'businesses' de Firestore
+            userType: null, // 'client' o 'business'
+            confirmationResult: null // Para la verificación OTP
         };
 
         // =================================================================
         // SELECTORES DEL DOM
         // =================================================================
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
         const views = {
             clientLogin: document.getElementById('client-login-view'),
             registration: document.getElementById('registration-view'),
+            businessLogin: document.getElementById('business-login-view'),
+            businessRegister: document.getElementById('business-register-view'),
             dashboard: document.getElementById('dashboard-view'),
             cashier: document.getElementById('cashier-view')
         };
@@ -266,71 +240,20 @@
             rewardConfig: document.getElementById('reward-config-modal'),
             alert: document.getElementById('alert-modal')
         };
-        // Entradas y Botones Login
-        const phoneInput = document.getElementById('phone-input');
-        const loginBtn = document.getElementById('login-btn');
-        const goToRegisterBtn = document.getElementById('go-to-register');
-        
-        // Entradas y Botones Registro
-        const registerNameInput = document.getElementById('register-name-input');
-        const registerPhoneInput = document.getElementById('register-phone-input');
-        const registerBtn = document.getElementById('register-btn');
-        const goToLoginBtn = document.getElementById('go-to-login');
-
-        // OTP
-        const otpInput = document.getElementById('otp-input');
-        const otpVerifyBtn = document.getElementById('otp-verify-btn');
-        
-        // Alerta
-        const alertTitle = document.getElementById('alert-title');
-        const alertMessage = document.getElementById('alert-message');
-        const alertOkBtn = document.getElementById('alert-ok-btn');
-        const alertIconSvg = document.getElementById('alert-icon-svg');
-        const alertIconContainer = document.getElementById('alert-icon-container');
-
-        // Generales
-        const logoutBtn = document.getElementById('logout-btn');
-        const goToCashierBtn = document.getElementById('go-to-cashier');
-        const cashierLogoutBtn = document.getElementById('cashier-logout-btn');
-        const rewardConfigBtn = document.getElementById('reward-config-btn');
-        const saveRewardBtn = document.getElementById('save-reward-btn');
-        const cancelRewardBtn = document.getElementById('cancel-reward-btn');
         const splashScreen = document.getElementById('splash-screen');
 
-        // Contenedores
-        const cardsContainer = document.getElementById('cards-container');
-        const clientsListContainer = document.getElementById('clients-list-container');
-
-
         // =================================================================
-        // LÓGICA DE LA APLICACIÓN
+        // LÓGICA DE NAVEGACIÓN Y MODALES
         // =================================================================
-        
-        // Función para manejar la persistencia en localStorage
-        const db = {
-            get: (key) => JSON.parse(localStorage.getItem(key)),
-            set: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
-            init: () => {
-                if (!db.get('clientAccounts')) {
-                    Object.keys(DB_DATA).forEach(key => {
-                        db.set(key, DB_DATA[key]);
-                    });
-                }
-            }
-        };
-        
-        // Router/Navegador simple
         const showView = (viewId) => {
             Object.values(views).forEach(view => view.classList.add('hidden'));
-            document.getElementById(viewId).classList.remove('hidden');
-            state.currentView = viewId;
+            const targetView = document.getElementById(viewId);
+            if (targetView) targetView.classList.remove('hidden');
         };
-        
-        // Funciones para mostrar/ocultar modales
-        const showModal = (modalId) => modals[modalId].classList.remove('hidden');
-        const hideModal = (modalId) => modals[modalId].classList.add('hidden');
 
-        // Lógica de Alertas
+        const showModal = (modalId) => modals[modalId] && modals[modalId].classList.remove('hidden');
+        const hideModal = (modalId) => modals[modalId] && modals[modalId].classList.add('hidden');
+
         const ICONS = {
             success: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />',
             error: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />',
@@ -338,273 +261,361 @@
         };
 
         const showAlert = (message, type = 'error') => {
-            alertMessage.textContent = message;
-            alertIconSvg.innerHTML = ICONS[type] || ICONS.info;
+            document.getElementById('alert-message').textContent = message;
+            document.getElementById('alert-icon-svg').innerHTML = ICONS[type] || ICONS.info;
+            const titleEl = document.getElementById('alert-title');
+            const iconContainer = document.getElementById('alert-icon-container');
 
-            if (type === 'error') {
-                alertTitle.textContent = 'Error';
-                alertIconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-500 mb-4';
-            } else if (type === 'success') {
-                alertTitle.textContent = 'Éxito';
-                alertIconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-menta mb-4';
-            } else {
-                alertTitle.textContent = 'Aviso';
-                alertIconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-500 mb-4';
-            }
+            if (type === 'error') { titleEl.textContent = 'Error'; iconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-500 mb-4'; } 
+            else if (type === 'success') { titleEl.textContent = 'Éxito'; iconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-menta mb-4'; } 
+            else { titleEl.textContent = 'Aviso'; iconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-500 mb-4'; }
             
             showModal('alert');
         };
 
-        const hideAlert = () => hideModal('alert');
-
-        // Lógica de Renderizado
-        const renderDashboard = () => {
-            const clientBalances = db.get('loyaltyBalances').filter(b => b.clientId === state.loggedInClientId);
-            if (clientBalances.length === 0) {
-                 cardsContainer.innerHTML = `<div class="text-center text-subtle-text mt-10"><p>Aún no tienes tarjetas de lealtad.</p><p>¡Visita nuestros negocios afiliados!</p></div>`;
-                 return;
+        // =================================================================
+        // RENDERIZADO DE VISTAS
+        // =================================================================
+        const renderDashboard = async () => {
+            const cardsContainer = document.getElementById('cards-container');
+            cardsContainer.innerHTML = `<p class="text-subtle-text text-center mt-4">Cargando tus tarjetas...</p>`;
+            
+            const balancesSnapshot = await db.collection('loyaltyBalances').where('clientId', '==', state.currentUser.uid).get();
+            if (balancesSnapshot.empty) {
+                cardsContainer.innerHTML = `<div class="text-center text-subtle-text mt-10"><p>Aún no tienes tarjetas de lealtad.</p></div>`;
+                return;
             }
 
-            cardsContainer.innerHTML = clientBalances.map(balance => {
-                const program = db.get('businessPrograms').find(p => p.id === balance.businessId);
+            const cardPromises = balancesSnapshot.docs.map(async (doc) => {
+                const balance = doc.data();
+                const businessDoc = await db.collection('businesses').doc(balance.businessId).get();
+                if (!businessDoc.exists) return '';
+                const program = businessDoc.data();
+                
                 const progress = Math.min((balance.stamps / program.stampsRequired) * 100, 100);
                 const isRewardReady = balance.stamps >= program.stampsRequired;
-
-                const circumference = 2 * Math.PI * 45; // 2 * pi * radio
+                const circumference = 2 * Math.PI * 45;
                 const strokeDashoffset = circumference - (progress / 100) * circumference;
 
                 return `
-                    <div class="bg-dark-surface rounded-xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition-transform duration-300 ${isRewardReady ? 'ring-2 ring-oro-suave' : ''}">
-                        <div class="p-5">
-                            <div class="flex items-center justify-between">
-                                <div class="flex-grow">
-                                    <div class="uppercase tracking-wide text-sm text-menta font-bold">${program.name}</div>
-                                    <p class="mt-1 text-2xl font-semibold">${balance.stamps}/${program.stampsRequired} <span class="text-lg font-normal text-subtle-text">Sellos</span></p>
-                                    ${isRewardReady ? `<p class="mt-2 text-sm font-semibold text-oro-suave flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2V4z"/><path d="M5 12a2 2 0 00-2 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 00-2-2H5z"/></svg><b>Recompensa:&nbsp;</b>${program.rewardTitle}</p>` : ''}
-                                </div>
-                                <div class="relative w-24 h-24">
-                                    <svg class="w-full h-full" viewBox="0 0 100 100">
-                                        <!-- Círculo de fondo -->
-                                        <circle class="text-zinc-700" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/>
-                                        <!-- Círculo de progreso -->
-                                        <circle class="text-menta" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"
-                                            style="stroke-dasharray: ${circumference}; stroke-dashoffset: ${strokeDashoffset}; transition: stroke-dashoffset 0.5s ease-out; transform: rotate(-90deg); transform-origin: 50% 50%; "/>
-                                    </svg>
-                                    <span class="absolute inset-0 flex items-center justify-center text-xl font-bold text-light-text">${Math.round(progress)}%</span>
-                                </div>
+                    <div class="bg-dark-surface rounded-xl shadow-lg overflow-hidden ${isRewardReady ? 'ring-2 ring-oro-suave' : ''}">
+                        <div class="p-5"><div class="flex items-center justify-between">
+                            <div class="flex-grow">
+                                <div class="uppercase tracking-wide text-sm text-menta font-bold">${program.name}</div>
+                                <p class="mt-1 text-2xl font-semibold">${balance.stamps}/${program.stampsRequired} <span class="text-lg font-normal text-subtle-text">Sellos</span></p>
+                                ${isRewardReady ? `<p class="mt-2 text-sm font-semibold text-oro-suave flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2V4z"/><path d="M5 12a2 2 0 00-2 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 00-2-2H5z"/></svg><b>Recompensa:&nbsp;</b>${program.rewardTitle}</p>` : ''}
                             </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+                            <div class="relative w-24 h-24">
+                                <svg class="w-full h-full" viewBox="0 0 100 100">
+                                    <circle class="text-zinc-700" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/>
+                                    <circle class="text-menta" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" style="stroke-dasharray: ${circumference}; stroke-dashoffset: ${strokeDashoffset}; transition: stroke-dashoffset 0.5s ease-out; transform: rotate(-90deg); transform-origin: 50% 50%; "/>
+                                </svg>
+                                <span class="absolute inset-0 flex items-center justify-center text-xl font-bold text-light-text">${Math.round(progress)}%</span>
+                            </div>
+                        </div></div>
+                    </div>`;
+            });
+
+            cardsContainer.innerHTML = (await Promise.all(cardPromises)).join('');
         };
 
-        const renderCashierView = () => {
-            const businessProgram = db.get('businessPrograms').find(p => p.id === state.loggedInBusinessId);
-            document.getElementById('business-name-header').textContent = businessProgram.name;
+        const renderCashierView = async () => {
+            const clientsListContainer = document.getElementById('clients-list-container');
+            document.getElementById('business-name-header').textContent = state.userProfile.name;
+            clientsListContainer.innerHTML = `<p class="text-subtle-text text-center mt-4">Cargando clientes...</p>`;
 
-            const businessBalances = db.get('loyaltyBalances').filter(b => b.businessId === state.loggedInBusinessId);
-            const clients = db.get('clientAccounts');
+            const balancesSnapshot = await db.collection('loyaltyBalances').where('businessId', '==', state.currentUser.uid).get();
+            if (balancesSnapshot.empty) {
+                clientsListContainer.innerHTML = `<div class="text-center text-subtle-text mt-10 p-4"><p>Aún no tienes clientes registrados en tu programa de lealtad.</p></div>`;
+                return;
+            }
 
-            clientsListContainer.innerHTML = businessBalances.map(balance => {
-                const client = clients.find(c => c.id === balance.clientId);
-                if (!client) return ''; // Manejo de caso borde si un cliente fue eliminado
+            const clientPromises = balancesSnapshot.docs.map(async (doc) => {
+                const balance = doc.data();
+                const clientDoc = await db.collection('clients').doc(balance.clientId).get();
+                if (!clientDoc.exists) return '';
+                const client = clientDoc.data();
+                
                 return `
                 <div class="bg-dark-surface rounded-lg shadow-sm p-4 m-2 flex items-center justify-between">
                     <div>
                         <p class="font-semibold text-light-text">${client.name}</p>
                         <p class="text-sm text-subtle-text">${client.phone}</p>
-                        <p class="text-sm font-medium text-menta mt-1">${balance.stamps} / ${businessProgram.stampsRequired} sellos</p>
+                        <p class="text-sm font-medium text-menta mt-1">${balance.stamps} / ${state.userProfile.stampsRequired} sellos</p>
                     </div>
-                    <button data-client-id="${client.id}" class="add-stamp-btn bg-menta text-dark-bg py-3 px-5 rounded-lg font-bold shadow-md hover:bg-green-300 transition ease-in-out duration-300">
-                        +1 Sello
-                    </button>
-                </div>
-                `;
-            }).join('');
+                    <button data-balance-id="${doc.id}" class="add-stamp-btn bg-menta text-dark-bg py-3 px-5 rounded-lg font-bold shadow-md hover:bg-green-300 transition">+1 Sello</button>
+                </div>`;
+            });
 
-            // Re-asignar event listeners
-            document.querySelectorAll('.add-stamp-btn').forEach(btn => {
-                btn.addEventListener('click', handleAddStamp);
+            clientsListContainer.innerHTML = (await Promise.all(clientPromises)).join('');
+            document.querySelectorAll('.add-stamp-btn').forEach(btn => btn.addEventListener('click', handleAddStamp));
+        };
+        
+        // =================================================================
+        // LÓGICA DE AUTENTICACIÓN Y FIREBASE
+        // =================================================================
+        
+        const setupRecaptcha = () => {
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                'size': 'invisible',
+                'callback': (response) => { /* reCAPTCHA solved */ }
             });
         };
 
-        // Handlers de eventos
-        const handleClientLogin = () => {
+        const handleClientLogin = async () => {
+            const phoneInput = document.getElementById('phone-input');
             const phone = phoneInput.value.replace(/\s/g, '');
-            if (phone.length !== 10) {
-                showAlert('Por favor, ingresa un número de 10 dígitos.', 'error');
-                return;
+            if (phone.length !== 10) return showAlert('Por favor, ingresa un número de 10 dígitos.');
+            
+            const fullPhone = `+52${phone}`;
+            const clientQuery = await db.collection('clients').where('phone', '==', fullPhone).get();
+
+            if (clientQuery.empty) {
+                return showAlert('Número no encontrado. Por favor, regístrate.');
             }
-            const client = db.get('clientAccounts').find(c => c.phone === phone);
-            if(client) {
-                state.loggedInClientId = client.id;
-                state.tempPhone = phone;
+
+            try {
+                state.confirmationResult = await auth.signInWithPhoneNumber(fullPhone, window.recaptchaVerifier);
                 showModal('otp');
-                otpInput.focus();
-            } else {
-                showAlert('Número no encontrado. Por favor, regístrate.', 'error');
+                document.getElementById('otp-input').focus();
+            } catch (error) {
+                console.error("Error al enviar SMS:", error);
+                showAlert('No se pudo enviar el código. Intenta de nuevo.');
+                window.recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
+            }
+        };
+
+        const handleRegistration = async () => {
+            const name = document.getElementById('register-name-input').value.trim();
+            const phone = document.getElementById('register-phone-input').value.replace(/\s/g, '');
+
+            if (!name) return showAlert('Por favor, ingresa tu nombre.');
+            if (phone.length !== 10) return showAlert('Por favor, ingresa un número de 10 dígitos.');
+
+            const fullPhone = `+52${phone}`;
+            const clientQuery = await db.collection('clients').where('phone', '==', fullPhone).get();
+            if (!clientQuery.empty) return showAlert('Este número ya está registrado. Por favor, inicia sesión.');
+
+            try {
+                // Primero enviamos el SMS y luego creamos el perfil del cliente cuando verifique
+                state.confirmationResult = await auth.signInWithPhoneNumber(fullPhone, window.recaptchaVerifier);
+                
+                // Guardamos los datos de registro temporalmente
+                sessionStorage.setItem('pendingRegistration', JSON.stringify({ name, phone: fullPhone }));
+
+                showModal('otp');
+                document.getElementById('otp-input').focus();
+            } catch (error) {
+                console.error("Error al enviar SMS en registro:", error);
+                showAlert('No se pudo enviar el código. Intenta de nuevo.');
+                window.recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
             }
         };
         
-        const handleRegistration = () => {
-            const name = registerNameInput.value.trim();
-            const phone = registerPhoneInput.value.replace(/\s/g, '');
-
-            if (!name) {
-                showAlert('Por favor, ingresa tu nombre.', 'error');
-                return;
-            }
-            if (phone.length !== 10) {
-                showAlert('Por favor, ingresa un número de 10 dígitos.', 'error');
-                return;
-            }
-
-            const existingClient = db.get('clientAccounts').find(c => c.phone === phone);
-            if (existingClient) {
-                showAlert('Este número de teléfono ya está registrado. Por favor, inicia sesión.', 'error');
-                return;
-            }
-
-            // Crear nuevo cliente
-            const newClientId = 'client_' + Date.now();
-            const newClient = { id: newClientId, name: name, phone: phone };
+        const handleOtpVerification = async () => {
+            const otp = document.getElementById('otp-input').value;
+            if (otp.length !== 6 || !state.confirmationResult) return showAlert('Código inválido.');
             
-            // Añadir a la base de datos
-            const clients = db.get('clientAccounts');
-            clients.push(newClient);
-            db.set('clientAccounts', clients);
-
-            // Crear su primera tarjeta de lealtad para el negocio actual
-            const newBalance = { clientId: newClientId, businessId: state.loggedInBusinessId, stamps: 0 };
-            const balances = db.get('loyaltyBalances');
-            balances.push(newBalance);
-            db.set('loyaltyBalances', balances);
-
-            // Proceder a la verificación OTP
-            state.loggedInClientId = newClientId;
-            state.tempPhone = phone;
-            showModal('otp');
-            otpInput.focus();
-        };
-
-        const handleOtpVerification = () => {
-            // Simulación simple: cualquier código de 4 dígitos es válido
-            if (otpInput.value.length === 4) {
-                hideModal('otp');
-                otpInput.value = '';
-                phoneInput.value = '';
-                registerNameInput.value = '';
-                registerPhoneInput.value = '';
-                renderDashboard();
-                showView('dashboard-view');
-            } else {
-                showAlert('Código inválido.', 'error');
-            }
-        };
-        
-        const handleLogout = () => {
-            state.loggedInClientId = null;
-            state.tempPhone = null;
-            showView('client-login-view');
-        };
-
-        const handleGoToCashier = (e) => {
-            e.preventDefault();
-            // En un app real, aquí habría un login para negocios
-            renderCashierView();
-            showView('cashier-view');
-        }
-
-        const handleAddStamp = (e) => {
-            const clientId = e.target.dataset.clientId;
-            let balances = db.get('loyaltyBalances');
-            const balanceIndex = balances.findIndex(b => b.clientId === clientId && b.businessId === state.loggedInBusinessId);
-            
-            if (balanceIndex > -1) {
-                const program = db.get('businessPrograms').find(p => p.id === state.loggedInBusinessId);
-                // Evitar añadir sellos si la recompensa está lista para ser canjeada
-                if (balances[balanceIndex].stamps >= program.stampsRequired) {
-                    showAlert('Este cliente ya tiene una recompensa lista para canjear.', 'info');
-                    return;
+            try {
+                const result = await state.confirmationResult.confirm(otp);
+                const user = result.user;
+                
+                const pendingRegistration = JSON.parse(sessionStorage.getItem('pendingRegistration'));
+                if (pendingRegistration) {
+                    await db.collection('clients').doc(user.uid).set({
+                        name: pendingRegistration.name,
+                        phone: pendingRegistration.phone
+                    });
+                    sessionStorage.removeItem('pendingRegistration');
                 }
-                balances[balanceIndex].stamps++;
-                db.set('loyaltyBalances', balances);
+                
+                hideModal('otp');
+                document.getElementById('otp-input').value = '';
+                // onAuthStateChanged se encargará del resto
+            } catch (error) {
+                console.error("Error de verificación OTP:", error);
+                showAlert('Código incorrecto. Intenta de nuevo.');
+            }
+        };
+        
+        const handleBusinessRegister = async () => {
+            const name = document.getElementById('business-name-register').value.trim();
+            const email = document.getElementById('business-email-register').value.trim();
+            const password = document.getElementById('business-password-register').value;
+            if (!name || !email || password.length < 6) return showAlert('Por favor completa todos los campos. La contraseña debe tener al menos 6 caracteres.');
+            
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                await db.collection('businesses').doc(user.uid).set({
+                    name: name,
+                    email: email,
+                    stampsRequired: 10,
+                    rewardTitle: 'Producto Gratis',
+                    rewardDescription: 'Reclama un producto gratis por tu lealtad.'
+                });
+                // onAuthStateChanged se encargará de redirigir
+            } catch (error) {
+                console.error("Error de registro de negocio:", error);
+                showAlert(error.code === 'auth/email-already-in-use' ? 'Este correo ya está en uso.' : 'Error al registrar la cuenta.');
+            }
+        };
+
+        const handleBusinessLogin = async () => {
+            const email = document.getElementById('business-email-login').value.trim();
+            const password = document.getElementById('business-password-login').value;
+            if (!email || !password) return showAlert('Por favor, ingresa tu correo y contraseña.');
+            
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                // onAuthStateChanged se encargará de redirigir
+            } catch (error) {
+                console.error("Error de inicio de sesión de negocio:", error);
+                showAlert('Correo o contraseña incorrectos.');
+            }
+        };
+
+        const handleLogout = () => {
+            auth.signOut();
+        };
+
+        const handleAddStamp = async (e) => {
+            const balanceId = e.target.dataset.balanceId;
+            const balanceRef = db.collection('loyaltyBalances').doc(balanceId);
+            
+            try {
+                await db.runTransaction(async (transaction) => {
+                    const balanceDoc = await transaction.get(balanceRef);
+                    if (!balanceDoc.exists) throw "El documento no existe";
+                    
+                    const currentStamps = balanceDoc.data().stamps;
+                    if (currentStamps < state.userProfile.stampsRequired) {
+                        transaction.update(balanceRef, { stamps: currentStamps + 1 });
+                    } else {
+                        showAlert('Este cliente ya tiene una recompensa lista.', 'info');
+                    }
+                });
                 renderCashierView(); // Re-render para mostrar el cambio
+            } catch (error) {
+                console.error("Error al añadir sello: ", error);
+                showAlert('No se pudo añadir el sello. Inténtalo de nuevo.');
             }
         };
 
         const handleShowRewardConfig = () => {
-            const program = db.get('businessPrograms').find(p => p.id === state.loggedInBusinessId);
-            document.getElementById('reward-title').value = program.rewardTitle;
-            document.getElementById('reward-description').value = program.rewardDescription;
+            document.getElementById('reward-title').value = state.userProfile.rewardTitle;
+            document.getElementById('reward-description').value = state.userProfile.rewardDescription;
+            document.getElementById('stamps-required').value = state.userProfile.stampsRequired;
             showModal('rewardConfig');
-        }
-        
-        const handleSaveRewardConfig = () => {
+        };
+
+        const handleSaveRewardConfig = async () => {
             const newTitle = document.getElementById('reward-title').value;
             const newDesc = document.getElementById('reward-description').value;
+            const newStamps = parseInt(document.getElementById('stamps-required').value, 10);
             
-            let programs = db.get('businessPrograms');
-            const programIndex = programs.findIndex(p => p.id === state.loggedInBusinessId);
+            if (!newTitle || !newDesc || isNaN(newStamps) || newStamps < 1) {
+                return showAlert('Por favor, completa todos los campos correctamente.');
+            }
 
-            if (programIndex > -1) {
-                programs[programIndex].rewardTitle = newTitle;
-                programs[programIndex].rewardDescription = newDesc;
-                db.set('businessPrograms', programs);
+            try {
+                await db.collection('businesses').doc(state.currentUser.uid).update({
+                    rewardTitle: newTitle,
+                    rewardDescription: newDesc,
+                    stampsRequired: newStamps
+                });
+                // Actualizar perfil local y re-renderizar
+                state.userProfile.rewardTitle = newTitle;
+                state.userProfile.rewardDescription = newDesc;
+                state.userProfile.stampsRequired = newStamps;
                 hideModal('rewardConfig');
                 showAlert('Recompensa actualizada con éxito.', 'success');
+                renderCashierView();
+            } catch (error) {
+                console.error("Error al guardar configuración:", error);
+                showAlert('No se pudo guardar la configuración.');
             }
-        }
-
+        };
 
         // =================================================================
-        // INICIALIZACIÓN DE LA APP
+        // INICIALIZACIÓN Y MANEJO DE ESTADO DE AUTH
         // =================================================================
+        auth.onAuthStateChanged(async (user) => {
+            splashScreen.classList.add('hidden');
+            if (user) {
+                state.currentUser = user;
+                let profileDoc;
+                
+                // Determinar si es cliente o negocio
+                profileDoc = await db.collection('businesses').doc(user.uid).get();
+                if (profileDoc.exists) {
+                    state.userType = 'business';
+                    state.userProfile = profileDoc.data();
+                    authContainer.classList.add('hidden');
+                    appContainer.classList.remove('hidden');
+                    renderCashierView();
+                    showView('cashier-view');
+                } else {
+                    profileDoc = await db.collection('clients').doc(user.uid).get();
+                    if (profileDoc.exists) {
+                        state.userType = 'client';
+                        state.userProfile = profileDoc.data();
+                        authContainer.classList.add('hidden');
+                        appContainer.classList.remove('hidden');
+                        renderDashboard();
+                        showView('dashboard-view');
+                    } else {
+                        // Usuario autenticado pero sin perfil (caso raro), desloguear
+                        console.warn("Usuario sin perfil encontrado, deslogueando.");
+                        auth.signOut();
+                    }
+                }
+            } else {
+                state.currentUser = null;
+                state.userProfile = null;
+                state.userType = null;
+                appContainer.classList.add('hidden');
+                authContainer.classList.remove('hidden');
+                showView('client-login-view');
+            }
+        });
+
         const init = () => {
-            // Registrar Service Worker de forma robusta
+            // Registrar Service Worker
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    // Construir una URL absoluta para el service worker para evitar problemas de origen cruzado en entornos sandboxed.
                     const swUrl = new URL('service-worker.js', window.location.href).href;
-                    navigator.serviceWorker.register(swUrl, { scope: './' })
-                        .then(registration => {
-                            console.log('✅ SW registered with scope:', registration.scope);
-                        })
-                        .catch(error => {
-                            console.error('❌ SW registration failed:', error);
-                        });
+                    navigator.serviceWorker.register(swUrl)
+                        .then(reg => console.log('✅ SW registered at scope:', reg.scope))
+                        .catch(err => console.error('❌ SW registration failed:', err));
                 });
             }
 
-            db.init(); // Cargar datos iniciales si no existen
+            setupRecaptcha();
 
             // Asignar event listeners
-            loginBtn.addEventListener('click', handleClientLogin);
-            registerBtn.addEventListener('click', handleRegistration);
-            otpVerifyBtn.addEventListener('click', handleOtpVerification);
-            logoutBtn.addEventListener('click', handleLogout);
-            alertOkBtn.addEventListener('click', hideAlert);
+            document.getElementById('login-btn').addEventListener('click', handleClientLogin);
+            document.getElementById('register-btn').addEventListener('click', handleRegistration);
+            document.getElementById('otp-verify-btn').addEventListener('click', handleOtpVerification);
+            document.getElementById('business-login-btn').addEventListener('click', handleBusinessLogin);
+            document.getElementById('business-register-btn').addEventListener('click', handleBusinessRegister);
             
-            // Navegación entre vistas
-            goToRegisterBtn.addEventListener('click', (e) => { e.preventDefault(); showView('registration-view'); });
-            goToLoginBtn.addEventListener('click', (e) => { e.preventDefault(); showView('client-login-view'); });
-            goToCashierBtn.addEventListener('click', handleGoToCashier);
+            document.getElementById('client-logout-btn').addEventListener('click', handleLogout);
+            document.getElementById('cashier-logout-btn').addEventListener('click', handleLogout);
             
-            cashierLogoutBtn.addEventListener('click', handleLogout);
-            rewardConfigBtn.addEventListener('click', handleShowRewardConfig);
-            saveRewardBtn.addEventListener('click', handleSaveRewardConfig);
-            cancelRewardBtn.addEventListener('click', () => hideModal('rewardConfig'));
+            document.getElementById('alert-ok-btn').addEventListener('click', () => hideModal('alert'));
+            document.getElementById('reward-config-btn').addEventListener('click', handleShowRewardConfig);
+            document.getElementById('save-reward-btn').addEventListener('click', handleSaveRewardConfig);
+            document.getElementById('cancel-reward-btn').addEventListener('click', () => hideModal('rewardConfig'));
             
-            // Permitir Enter para login y OTP
-            phoneInput.addEventListener('keypress', (e) => e.key === 'Enter' && handleClientLogin());
-            registerPhoneInput.addEventListener('keypress', (e) => e.key === 'Enter' && handleRegistration());
-            otpInput.addEventListener('keypress', (e) => e.key === 'Enter' && handleOtpVerification());
-
-            // Ocultar splash screen
-            setTimeout(() => {
-                splashScreen.classList.add('hidden');
-            }, 500);
+            // Navegación entre vistas de auth
+            document.getElementById('go-to-register').addEventListener('click', (e) => { e.preventDefault(); showView('registration-view'); });
+            document.getElementById('go-to-login').addEventListener('click', (e) => { e.preventDefault(); showView('client-login-view'); });
+            document.getElementById('go-to-business-login').addEventListener('click', (e) => { e.preventDefault(); showView('business-login-view'); });
+            document.getElementById('go-to-business-register').addEventListener('click', (e) => { e.preventDefault(); showView('business-register-view'); });
+            document.getElementById('go-to-client-login-from-business').addEventListener('click', (e) => { e.preventDefault(); showView('client-login-view'); });
+            document.getElementById('go-to-business-login-from-register').addEventListener('click', (e) => { e.preventDefault(); showView('business-login-view'); });
         };
 
         init();
