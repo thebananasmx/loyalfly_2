@@ -217,45 +217,6 @@
 
     </div>
 
-    <!-- 
-    ================================================================
-    CONTENIDO PARA ARCHIVOS PWA
-    Crea los siguientes dos archivos en la raíz de tu proyecto.
-    ================================================================
-    -->
-
-    <!-- 
-    ARCHIVO: manifest.json 
-    (Copia y pega este contenido en un nuevo archivo llamado "manifest.json")
-    
-    {
-        "name": "Loyalfly - Cartera de Lealtad",
-        "short_name": "Loyalfly",
-        "start_url": "./index.html",
-        "display": "standalone",
-        "background_color": "#18181B",
-        "theme_color": "#34D399",
-        "description": "Tu cartera de lealtad digital, siempre contigo.",
-        "icons": [
-            {
-                "src": "./images/icon-192x192.png",
-                "sizes": "192x192",
-                "type": "image/png"
-            },
-            {
-                "src": "./images/icon-512x512.png",
-                "sizes": "512x512",
-                "type": "image/png"
-            }
-        ]
-    }
-
-    ARCHIVO: service-worker.js
-    (Crea este archivo)
-    
-    NOTA: Asegúrate de crear una carpeta "images" y colocar los íconos "icon-192x192.png" y "icon-512x512.png".
-    -->
-
     <script>
     document.addEventListener('DOMContentLoaded', () => {
 
@@ -601,14 +562,18 @@
         // INICIALIZACIÓN DE LA APP
         // =================================================================
         const init = () => {
-            // Registrar Service Worker
+            // Registrar Service Worker de forma robusta
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('./service-worker.js').then(registration => {
-                        console.log('SW registered: ', registration);
-                    }).catch(registrationError => {
-                        console.log('SW registration failed: ', registrationError);
-                    });
+                    // Construir una URL absoluta para el service worker para evitar problemas de origen cruzado en entornos sandboxed.
+                    const swUrl = new URL('service-worker.js', window.location.href).href;
+                    navigator.serviceWorker.register(swUrl, { scope: './' })
+                        .then(registration => {
+                            console.log('✅ SW registered with scope:', registration.scope);
+                        })
+                        .catch(error => {
+                            console.error('❌ SW registration failed:', error);
+                        });
                 });
             }
 
