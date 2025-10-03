@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loyalfly - Cartera de Lealtad</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuración PWA -->
+    <meta name="theme-color" content="#34D399">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./images/icon-192x192.png">
+
+    <!-- Estilos personalizados para la paleta de colores -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-bg': '#18181B', // zinc-900
+                        'dark-surface': '#27272A', // zinc-800
+                        'menta': '#34D399',
+                        'oro-suave': '#FBBF24',
+                        'light-text': '#F4F4F5', // zinc-100
+                        'subtle-text': '#A1A1AA', // zinc-400
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: #18181B; /* dark-bg */
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Estilos para placeholder en modo oscuro */
+        ::placeholder {
+            color: #52525B; /* zinc-600 */
+        }
+    </style>
+</head>
+<body class="text-light-text antialiased">
+
+    <!-- Contenedor principal de la aplicación -->
+    <div id="app" class="max-w-md mx-auto min-h-screen bg-dark-bg shadow-lg">
+
+        <!-- VISTA: LOGIN DE CLIENTE -->
+        <div id="client-login-view" class="flex flex-col items-center justify-center min-h-screen p-8">
+            <h1 class="text-5xl font-bold text-menta mb-2">Loyalfly</h1>
+            <p class="text-subtle-text mb-12">Tu cartera de lealtad digital.</p>
+            <div class="w-full">
+                <label for="phone-input" class="block text-sm font-medium text-subtle-text mb-2">Tu número de teléfono</label>
+                <div class="relative rounded-md shadow-sm">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <span class="text-subtle-text sm:text-sm">+52</span>
+                    </div>
+                    <input type="tel" id="phone-input" class="block w-full rounded-lg bg-dark-surface border-dark-surface pl-12 py-3 focus:border-menta focus:ring-menta sm:text-lg">
+                </div>
+            </div>
+            <button id="login-btn" class="w-full bg-menta text-dark-bg py-3 px-4 mt-6 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition ease-in-out duration-300">
+                Consultar Mis Tarjetas
+            </button>
+            <div class="mt-8 text-center">
+                 <p class="text-sm text-subtle-text">
+                    ¿No tienes cuenta? <a href="#" id="go-to-register" class="font-semibold text-menta hover:underline">Regístrate aquí</a>
+                 </p>
+                 <a href="#" id="go-to-cashier" class="text-sm text-menta hover:underline mt-2 inline-block">Soy un negocio</a>
+            </div>
+        </div>
+        
+        <!-- VISTA: REGISTRO EN SUCURSAL -->
+        <div id="registration-view" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
+            <h1 class="text-3xl font-bold text-menta mb-2">Registro Nuevo</h1>
+            <p class="text-subtle-text mb-8">Crea tu cuenta para ganar recompensas.</p>
+            <div class="w-full space-y-4">
+                 <div>
+                    <label for="register-name-input" class="block text-sm font-medium text-subtle-text mb-2">Nombre completo</label>
+                    <input type="text" id="register-name-input" class="block w-full rounded-lg bg-dark-surface border-dark-surface py-3 px-4 focus:border-menta focus:ring-menta sm:text-lg" placeholder="Ej. Ana Torres">
+                </div>
+                <div>
+                    <label for="register-phone-input" class="block text-sm font-medium text-subtle-text mb-2">Tu número de teléfono</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <span class="text-subtle-text sm:text-sm">+52</span>
+                        </div>
+                        <input type="tel" id="register-phone-input" class="block w-full rounded-lg bg-dark-surface border-dark-surface pl-12 py-3 focus:border-menta focus:ring-menta sm:text-lg" placeholder="55 1234 5678">
+                    </div>
+                </div>
+            </div>
+            <button id="register-btn" class="w-full bg-menta text-dark-bg py-3 px-4 mt-6 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition ease-in-out duration-300">
+                Registrar y Crear Tarjeta
+            </button>
+            <div class="mt-8 text-center">
+                 <a href="#" id="go-to-login" class="text-sm text-menta hover:underline">Ya tengo una cuenta</a>
+            </div>
+        </div>
+
+        <!-- VISTA: DASHBOARD DE TARJETAS DE CLIENTE -->
+        <div id="dashboard-view" class="hidden flex flex-col h-screen">
+            <header class="sticky top-0 bg-dark-bg/80 backdrop-blur-sm p-4 border-b border-dark-surface flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-menta">Loyalfly</h1>
+                <button id="logout-btn" class="text-sm text-menta hover:underline">Salir</button>
+            </header>
+            <main id="cards-container" class="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar pb-20">
+                <!-- Las tarjetas se insertarán aquí dinámicamente -->
+            </main>
+        </div>
+
+        <!-- VISTA: CAJERO -->
+        <div id="cashier-view" class="hidden flex flex-col h-screen">
+             <header class="sticky top-0 bg-dark-bg/80 backdrop-blur-sm p-4 border-b border-dark-surface flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-menta" id="business-name-header"></h1>
+                    <p class="text-sm text-subtle-text">Panel de Cajero</p>
+                </div>
+                <div class="flex items-center">
+                    <button id="reward-config-btn" class="text-menta p-2 rounded-full hover:bg-dark-surface">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </button>
+                    <button id="cashier-logout-btn" class="text-sm text-menta hover:underline ml-4">Salir</button>
+                </div>
+            </header>
+            <main id="clients-list-container" class="flex-grow overflow-y-auto p-2 no-scrollbar pb-20">
+                <!-- La lista de clientes se insertará aquí -->
+            </main>
+        </div>
+
+        <!-- MODAL: OTP -->
+        <div id="otp-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
+            <div class="bg-dark-surface rounded-lg shadow-xl p-8 w-full max-w-sm text-center">
+                <h2 class="text-xl font-bold text-menta mb-2">Verificación</h2>
+                <p class="text-subtle-text mb-6">Ingresa el código que te enviamos.</p>
+                <input type="text" id="otp-input" class="w-full text-center text-2xl tracking-[1em] rounded-lg bg-dark-bg border-dark-surface py-3 focus:border-menta focus:ring-menta" maxlength="4" placeholder="----">
+                <button id="otp-verify-btn" class="w-full bg-menta text-dark-bg py-3 px-4 mt-6 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition ease-in-out duration-300">
+                    Verificar
+                </button>
+            </div>
+        </div>
+        
+        <!-- MODAL: Configuración de Recompensa -->
+        <div id="reward-config-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
+            <div class="bg-dark-surface rounded-lg shadow-xl p-8 w-full max-w-sm">
+                <h2 class="text-xl font-bold text-menta mb-4">Configurar Recompensa</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="reward-title" class="block text-sm font-medium text-subtle-text">Título de la Recompensa</label>
+                        <input type="text" id="reward-title" class="mt-1 block w-full rounded-md bg-dark-bg border-dark-surface shadow-sm focus:border-menta focus:ring-menta">
+                    </div>
+                    <div>
+                        <label for="reward-description" class="block text-sm font-medium text-subtle-text">Descripción Detallada</label>
+                        <textarea id="reward-description" rows="3" class="mt-1 block w-full rounded-md bg-dark-bg border-dark-surface shadow-sm focus:border-menta focus:ring-menta"></textarea>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button id="cancel-reward-btn" class="bg-zinc-600 text-light-text py-2 px-4 rounded-lg hover:bg-zinc-500 transition">Cancelar</button>
+                    <button id="save-reward-btn" class="bg-menta text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-green-300 transition">Guardar</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 
+    ================================================================
+    CONTENIDO PARA ARCHIVOS PWA
+    Crea los siguientes dos archivos en la raíz de tu proyecto.
+    ================================================================
+    -->
+
+    <!-- 
+    ARCHIVO: manifest.json 
+    (Copia y pega este contenido en un nuevo archivo llamado "manifest.json")
+    
+    {
+        "name": "Loyalfly - Cartera de Lealtad",
+        "short_name": "Loyalfly",
+        "start_url": "./index.html",
+        "display": "standalone",
+        "background_color": "#18181B",
+        "theme_color": "#34D399",
+        "description": "Tu cartera de lealtad digital, siempre contigo.",
+        "icons": [
+            {
+                "src": "./images/icon-192x192.png",
+                "sizes": "192x192",
+                "type": "image/png"
+            },
+            {
+                "src": "./images/icon-512x512.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    }
+    
+    NOTA: Asegúrate de crear una carpeta "images" y colocar los íconos "icon-192x192.png" y "icon-512x512.png".
+    -->
+
+    <!-- 
+    ARCHIVO: service-worker.js
+    (Copia y pega este contenido en un nuevo archivo llamado "service-worker.js")
+
+    const CACHE_NAME = 'loyalfly-cache-v1';
+    const urlsToCache = [
+        './',
+        './index.html'
+    ];
+
+    self.addEventListener('install', event => {
+        event.waitUntil(
+            caches.open(CACHE_NAME)
+                .then(cache => {
+                    console.log('Opened cache');
+                    return cache.addAll(urlsToCache);
+                })
+        );
+    });
+
+    self.addEventListener('fetch', event => {
+        event.respondWith(
+            caches.match(event.request)
+                .then(response => {
+                    if (response) {
+                        return response;
+                    }
+                    return fetch(event.request);
+                })
+        );
+    });
+    -->
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // =================================================================
+        // SIMULACIÓN DE BASE DE DATOS Y ESTADO
+        // =================================================================
+        const DB_DATA = {
+            clientAccounts: [
+                { id: 'client_1', name: 'Ana Torres', phone: '5511223344' },
+                { id: 'client_2', name: 'Carlos Gomez', phone: '5522334455' },
+                { id: 'client_3', name: 'Sofia Luna', phone: '5533445566' },
+                { id: 'client_4', name: 'David Reyes', phone: '5544556677' },
+                { id: 'client_5', name: 'Maria Jose', phone: '5555667788' }
+            ],
+            businessPrograms: [
+                { id: 'business_1', name: 'Café C', stampsRequired: 10, rewardTitle: 'Café Americano Gratis', rewardDescription: 'Disfruta de un delicioso café americano de 12oz por tu lealtad.' },
+                { id: 'business_2', name: 'Café B', stampsRequired: 8, rewardTitle: '2x1 en Frappés', rewardDescription: 'Compra un frappé de cualquier sabor y llévate el segundo gratis.' }
+            ],
+            loyaltyBalances: [
+                { clientId: 'client_1', businessId: 'business_1', stamps: 7 },
+                { clientId: 'client_1', businessId: 'business_2', stamps: 3 },
+                { clientId: 'client_2', businessId: 'business_1', stamps: 10 },
+                { clientId: 'client_3', businessId: 'business_1', stamps: 2 },
+                { clientId: 'client_4', businessId: 'business_2', stamps: 8 },
+                { clientId: 'client_5', businessId: 'business_1', stamps: 5 }
+            ]
+        };
+
+        let state = {
+            currentView: 'client-login-view',
+            loggedInClientId: null,
+            loggedInBusinessId: 'business_1', // Simulación de cajero logueado para "Café C"
+            tempPhone: null
+        };
+
+        // =================================================================
+        // SELECTORES DEL DOM
+        // =================================================================
+        const views = {
+            clientLogin: document.getElementById('client-login-view'),
+            registration: document.getElementById('registration-view'),
+            dashboard: document.getElementById('dashboard-view'),
+            cashier: document.getElementById('cashier-view')
+        };
+        const modals = {
+            otp: document.getElementById('otp-modal'),
+            rewardConfig: document.getElementById('reward-config-modal')
+        };
+        // Entradas y Botones Login
+        const phoneInput = document.getElementById('phone-input');
+        const loginBtn = document.getElementById('login-btn');
+        const goToRegisterBtn = document.getElementById('go-to-register');
+        
+        // Entradas y Botones Registro
+        const registerNameInput = document.getElementById('register-name-input');
+        const registerPhoneInput = document.getElementById('register-phone-input');
+        const registerBtn = document.getElementById('register-btn');
+        const goToLoginBtn = document.getElementById('go-to-login');
+
+        // OTP
+        const otpInput = document.getElementById('otp-input');
+        const otpVerifyBtn = document.getElementById('otp-verify-btn');
+        
+        // Generales
+        const logoutBtn = document.getElementById('logout-btn');
+        const goToCashierBtn = document.getElementById('go-to-cashier');
+        const cashierLogoutBtn = document.getElementById('cashier-logout-btn');
+        const rewardConfigBtn = document.getElementById('reward-config-btn');
+        const saveRewardBtn = document.getElementById('save-reward-btn');
+        const cancelRewardBtn = document.getElementById('cancel-reward-btn');
+
+        // Contenedores
+        const cardsContainer = document.getElementById('cards-container');
+        const clientsListContainer = document.getElementById('clients-list-container');
+
+
+        // =================================================================
+        // LÓGICA DE LA APLICACIÓN
+        // =================================================================
+        
+        // Función para manejar la persistencia en localStorage
+        const db = {
+            get: (key) => JSON.parse(localStorage.getItem(key)),
+            set: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
+            init: () => {
+                if (!db.get('clientAccounts')) {
+                    Object.keys(DB_DATA).forEach(key => {
+                        db.set(key, DB_DATA[key]);
+                    });
+                }
+            }
+        };
+        
+        // Router/Navegador simple
+        const showView = (viewId) => {
+            Object.values(views).forEach(view => view.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+            state.currentView = viewId;
+        };
+        
+        // Funciones para mostrar/ocultar modales
+        const showModal = (modalId) => modals[modalId].classList.remove('hidden');
+        const hideModal = (modalId) => modals[modalId].classList.add('hidden');
+
+        // Lógica de Renderizado
+        const renderDashboard = () => {
+            const clientBalances = db.get('loyaltyBalances').filter(b => b.clientId === state.loggedInClientId);
+            if (clientBalances.length === 0) {
+                 cardsContainer.innerHTML = `<div class="text-center text-subtle-text mt-10"><p>Aún no tienes tarjetas de lealtad.</p><p>¡Visita nuestros negocios afiliados!</p></div>`;
+                 return;
+            }
+
+            cardsContainer.innerHTML = clientBalances.map(balance => {
+                const program = db.get('businessPrograms').find(p => p.id === balance.businessId);
+                const progress = Math.min((balance.stamps / program.stampsRequired) * 100, 100);
+                const isRewardReady = balance.stamps >= program.stampsRequired;
+
+                const circumference = 2 * Math.PI * 45; // 2 * pi * radio
+                const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+                return `
+                    <div class="bg-dark-surface rounded-xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition-transform duration-300 ${isRewardReady ? 'ring-2 ring-oro-suave' : ''}">
+                        <div class="p-5">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-grow">
+                                    <div class="uppercase tracking-wide text-sm text-menta font-bold">${program.name}</div>
+                                    <p class="mt-1 text-2xl font-semibold">${balance.stamps}/${program.stampsRequired} <span class="text-lg font-normal text-subtle-text">Sellos</span></p>
+                                    ${isRewardReady ? `<p class="mt-2 text-sm font-semibold text-oro-suave flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2V4z"/><path d="M5 12a2 2 0 00-2 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 00-2-2H5z"/></svg><b>Recompensa:&nbsp;</b>${program.rewardTitle}</p>` : ''}
+                                </div>
+                                <div class="relative w-24 h-24">
+                                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                                        <!-- Círculo de fondo -->
+                                        <circle class="text-zinc-700" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/>
+                                        <!-- Círculo de progreso -->
+                                        <circle class="text-menta" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"
+                                            style="stroke-dasharray: ${circumference}; stroke-dashoffset: ${strokeDashoffset}; transition: stroke-dashoffset 0.5s ease-out; transform: rotate(-90deg); transform-origin: 50% 50%; "/>
+                                    </svg>
+                                    <span class="absolute inset-0 flex items-center justify-center text-xl font-bold text-light-text">${Math.round(progress)}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        const renderCashierView = () => {
+            const businessProgram = db.get('businessPrograms').find(p => p.id === state.loggedInBusinessId);
+            document.getElementById('business-name-header').textContent = businessProgram.name;
+
+            const businessBalances = db.get('loyaltyBalances').filter(b => b.businessId === state.loggedInBusinessId);
+            const clients = db.get('clientAccounts');
+
+            clientsListContainer.innerHTML = businessBalances.map(balance => {
+                const client = clients.find(c => c.id === balance.clientId);
+                if (!client) return ''; // Manejo de caso borde si un cliente fue eliminado
+                return `
+                <div class="bg-dark-surface rounded-lg shadow-sm p-4 m-2 flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold text-light-text">${client.name}</p>
+                        <p class="text-sm text-subtle-text">${client.phone}</p>
+                        <p class="text-sm font-medium text-menta mt-1">${balance.stamps} / ${businessProgram.stampsRequired} sellos</p>
+                    </div>
+                    <button data-client-id="${client.id}" class="add-stamp-btn bg-menta text-dark-bg py-3 px-5 rounded-lg font-bold shadow-md hover:bg-green-300 transition ease-in-out duration-300">
+                        +1 Sello
+                    </button>
+                </div>
+                `;
+            }).join('');
+
+            // Re-asignar event listeners
+            document.querySelectorAll('.add-stamp-btn').forEach(btn => {
+                btn.addEventListener('click', handleAddStamp);
+            });
+        };
+
+        // Handlers de eventos
+        const handleClientLogin = () => {
+            const phone = phoneInput.value.replace(/\s/g, '');
+            if (phone.length !== 10) {
+                alert('Por favor, ingresa un número de 10 dígitos.');
+                return;
+            }
+            const client = db.get('clientAccounts').find(c => c.phone === phone);
+            if(client) {
+                state.loggedInClientId = client.id;
+                state.tempPhone = phone;
+                showModal('otp');
+                otpInput.focus();
+            } else {
+                alert('Número no encontrado. Por favor, regístrate.');
+            }
+        };
+        
+        const handleRegistration = () => {
+            const name = registerNameInput.value.trim();
+            const phone = registerPhoneInput.value.replace(/\s/g, '');
+
+            if (!name) {
+                alert('Por favor, ingresa tu nombre.');
+                return;
+            }
+            if (phone.length !== 10) {
+                alert('Por favor, ingresa un número de 10 dígitos.');
+                return;
+            }
+
+            const existingClient = db.get('clientAccounts').find(c => c.phone === phone);
+            if (existingClient) {
+                alert('Este número de teléfono ya está registrado. Por favor, inicia sesión.');
+                return;
+            }
+
+            // Crear nuevo cliente
+            const newClientId = 'client_' + Date.now();
+            const newClient = { id: newClientId, name: name, phone: phone };
+            
+            // Añadir a la base de datos
+            const clients = db.get('clientAccounts');
+            clients.push(newClient);
+            db.set('clientAccounts', clients);
+
+            // Crear su primera tarjeta de lealtad para el negocio actual
+            const newBalance = { clientId: newClientId, businessId: state.loggedInBusinessId, stamps: 0 };
+            const balances = db.get('loyaltyBalances');
+            balances.push(newBalance);
+            db.set('loyaltyBalances', balances);
+
+            // Proceder a la verificación OTP
+            state.loggedInClientId = newClientId;
+            state.tempPhone = phone;
+            showModal('otp');
+            otpInput.focus();
+        };
+
+        const handleOtpVerification = () => {
+            // Simulación simple: cualquier código de 4 dígitos es válido
+            if (otpInput.value.length === 4) {
+                hideModal('otp');
+                otpInput.value = '';
+                phoneInput.value = '';
+                registerNameInput.value = '';
+                registerPhoneInput.value = '';
+                renderDashboard();
+                showView('dashboard-view');
+            } else {
+                alert('Código inválido.');
+            }
+        };
+        
+        const handleLogout = () => {
+            state.loggedInClientId = null;
+            state.tempPhone = null;
+            showView('client-login-view');
+        };
+
+        const handleGoToCashier = (e) => {
+            e.preventDefault();
+            // En un app real, aquí habría un login para negocios
+            renderCashierView();
+            showView('cashier-view');
+        }
+
+        const handleAddStamp = (e) => {
+            const clientId = e.target.dataset.clientId;
+            let balances = db.get('loyaltyBalances');
+            const balanceIndex = balances.findIndex(b => b.clientId === clientId && b.businessId === state.loggedInBusinessId);
+            
+            if (balanceIndex > -1) {
+                const program = db.get('businessPrograms').find(p => p.id === state.loggedInBusinessId);
+                // Evitar añadir sellos si la recompensa está lista para ser canjeada
+                if (balances[balanceIndex].stamps >= program.stampsRequired) {
+                    alert('Este cliente ya tiene una recompensa lista para canjear.');
+                    return;
+                }
+                balances[balanceIndex].stamps++;
+                db.set('loyaltyBalances', balances);
+                renderCashierView(); // Re-render para mostrar el cambio
+            }
+        };
+
+        const handleShowRewardConfig = () => {
+            const program = db.get('businessPrograms').find(p => p.id === state.loggedInBusinessId);
+            document.getElementById('reward-title').value = program.rewardTitle;
+            document.getElementById('reward-description').value = program.rewardDescription;
+            showModal('rewardConfig');
+        }
+        
+        const handleSaveRewardConfig = () => {
+            const newTitle = document.getElementById('reward-title').value;
+            const newDesc = document.getElementById('reward-description').value;
+            
+            let programs = db.get('businessPrograms');
+            const programIndex = programs.findIndex(p => p.id === state.loggedInBusinessId);
+
+            if (programIndex > -1) {
+                programs[programIndex].rewardTitle = newTitle;
+                programs[programIndex].rewardDescription = newDesc;
+                db.set('businessPrograms', programs);
+                hideModal('rewardConfig');
+                alert('Recompensa actualizada');
+            }
+        }
+
+
+        // =================================================================
+        // INICIALIZACIÓN DE LA APP
+        // =================================================================
+        const init = () => {
+            // Registrar Service Worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./service-worker.js').then(registration => {
+                        console.log('SW registered: ', registration);
+                    }).catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+                });
+            }
+
+            db.init(); // Cargar datos iniciales si no existen
+
+            // Asignar event listeners
+            loginBtn.addEventListener('click', handleClientLogin);
+            registerBtn.addEventListener('click', handleRegistration);
+            otpVerifyBtn.addEventListener('click', handleOtpVerification);
+            logoutBtn.addEventListener('click', handleLogout);
+            
+            // Navegación entre vistas
+            goToRegisterBtn.addEventListener('click', (e) => { e.preventDefault(); showView('registration-view'); });
+            goToLoginBtn.addEventListener('click', (e) => { e.preventDefault(); showView('client-login-view'); });
+            goToCashierBtn.addEventListener('click', handleGoToCashier);
+            
+            cashierLogoutBtn.addEventListener('click', handleLogout);
+            rewardConfigBtn.addEventListener('click', handleShowRewardConfig);
+            saveRewardBtn.addEventListener('click', handleSaveRewardConfig);
+            cancelRewardBtn.addEventListener('click', () => hideModal('rewardConfig'));
+            
+            // Permitir Enter para login y OTP
+            phoneInput.addEventListener('keypress', (e) => e.key === 'Enter' && handleClientLogin());
+            registerPhoneInput.addEventListener('keypress', (e) => e.key === 'Enter' && handleRegistration());
+            otpInput.addEventListener('keypress', (e) => e.key === 'Enter' && handleOtpVerification());
+        };
+
+        init();
+    });
+    </script>
+</body>
+</html>
