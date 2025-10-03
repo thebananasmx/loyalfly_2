@@ -138,7 +138,7 @@
             </div>
 
             <!-- VISTA: CAJERO -->
-            <div id="cashier-view" class="hidden flex flex-col h-screen">
+            <div id="cashier-view" class="hidden flex flex-col h-screen relative">
                 <header class="sticky top-0 bg-dark-bg/80 backdrop-blur-sm p-4 border-b border-dark-surface flex justify-between items-center">
                     <div><h1 class="text-2xl font-bold text-menta" id="business-name-header"></h1><p class="text-sm text-subtle-text">Panel de Cajero</p></div>
                     <div class="flex items-center">
@@ -147,6 +147,9 @@
                     </div>
                 </header>
                 <main id="clients-list-container" class="flex-grow overflow-y-auto p-2 no-scrollbar pb-20"></main>
+                <button id="add-client-fab" class="absolute bottom-6 right-6 bg-menta text-dark-bg rounded-full p-4 shadow-lg hover:bg-green-300 transition-transform transform hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                </button>
             </div>
         </div>
 
@@ -168,6 +171,28 @@
                     <div><label for="stamps-required" class="block text-sm font-medium text-subtle-text">Sellos Requeridos</label><input type="number" id="stamps-required" class="mt-1 block w-full rounded-md bg-dark-bg border-dark-surface shadow-sm focus:border-menta focus:ring-menta"></div>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3"><button id="cancel-reward-btn" class="bg-zinc-600 text-light-text py-2 px-4 rounded-lg hover:bg-zinc-500 transition">Cancelar</button><button id="save-reward-btn" class="bg-menta text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-green-300 transition">Guardar</button></div>
+            </div>
+        </div>
+         <div id="add-client-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-40">
+            <div class="bg-dark-surface rounded-lg shadow-xl p-8 w-full max-w-sm">
+                <h2 class="text-xl font-bold text-menta mb-4">Añadir Nuevo Cliente</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="add-client-name" class="block text-sm font-medium text-subtle-text">Nombre completo del cliente</label>
+                        <input type="text" id="add-client-name" class="mt-1 block w-full rounded-md bg-dark-bg border-dark-surface shadow-sm focus:border-menta focus:ring-menta" autocomplete="name">
+                    </div>
+                    <div>
+                        <label for="add-client-phone" class="block text-sm font-medium text-subtle-text">Teléfono (10 dígitos)</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-subtle-text sm:text-sm">+52</span></div>
+                            <input type="tel" id="add-client-phone" class="block w-full rounded-lg bg-dark-bg border-dark-surface pl-12 py-3 focus:border-menta focus:ring-menta sm:text-lg" autocomplete="tel">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button id="cancel-add-client-btn" class="bg-zinc-600 text-light-text py-2 px-4 rounded-lg hover:bg-zinc-500 transition">Cancelar</button>
+                    <button id="save-add-client-btn" class="bg-menta text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-green-300 transition">Añadir Cliente</button>
+                </div>
             </div>
         </div>
         <div id="alert-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
@@ -239,6 +264,7 @@
         const modals = {
             otp: document.getElementById('otp-modal'),
             rewardConfig: document.getElementById('reward-config-modal'),
+            addClient: document.getElementById('add-client-modal'),
             alert: document.getElementById('alert-modal')
         };
         const splashScreen = document.getElementById('splash-screen');
@@ -281,7 +307,7 @@
             const cardsContainer = document.getElementById('cards-container');
             cardsContainer.innerHTML = `<p class="text-subtle-text text-center mt-4">Cargando tus tarjetas...</p>`;
             
-            const balancesSnapshot = await db.collection('loyaltyBalances').where('clientId', '==', state.currentUser.uid).get();
+            const balancesSnapshot = await db.collection('loyaltyBalances').where('clientId', '==', state.userProfile.id).get();
             if (balancesSnapshot.empty) {
                 cardsContainer.innerHTML = `<div class="text-center text-subtle-text mt-10"><p>Aún no tienes tarjetas de lealtad.</p></div>`;
                 return;
@@ -395,7 +421,9 @@
 
             const fullPhone = `+52${phone}`;
             const clientQuery = await db.collection('clients').where('phone', '==', fullPhone).get();
-            if (!clientQuery.empty) return showAlert('Este número ya está registrado. Por favor, inicia sesión.');
+            if (!clientQuery.empty && clientQuery.docs[0].data().authUid) {
+                return showAlert('Este número ya está registrado. Por favor, inicia sesión.');
+            }
 
             try {
                 // Primero enviamos el SMS y luego creamos el perfil del cliente cuando verifique
@@ -422,11 +450,18 @@
                 const user = result.user;
                 
                 const pendingRegistration = JSON.parse(sessionStorage.getItem('pendingRegistration'));
-                if (pendingRegistration) {
-                    await db.collection('clients').doc(user.uid).set({
-                        name: pendingRegistration.name,
-                        phone: pendingRegistration.phone
-                    });
+                if (pendingRegistration && user.phoneNumber === pendingRegistration.phone) {
+                    const clientQuery = await db.collection('clients').where('phone', '==', user.phoneNumber).limit(1).get();
+                    if (clientQuery.empty) {
+                        await db.collection('clients').add({
+                            name: pendingRegistration.name,
+                            phone: user.phoneNumber,
+                            authUid: user.uid
+                        });
+                    } else {
+                        const clientDocRef = clientQuery.docs[0].ref;
+                        await clientDocRef.update({ authUid: user.uid, name: pendingRegistration.name });
+                    }
                     sessionStorage.removeItem('pendingRegistration');
                 }
                 
@@ -480,6 +515,55 @@
         const handleLogout = () => {
             auth.signOut();
         };
+        
+        const handleAddClient = async () => {
+            const name = document.getElementById('add-client-name').value.trim();
+            const phone = document.getElementById('add-client-phone').value.replace(/\s/g, '');
+
+            if (!name) return showAlert('Por favor, ingresa el nombre del cliente.');
+            if (phone.length !== 10) return showAlert('Por favor, ingresa un número de 10 dígitos.');
+            
+            const fullPhone = `+52${phone}`;
+            let clientId;
+
+            try {
+                const clientQuery = await db.collection('clients').where('phone', '==', fullPhone).limit(1).get();
+
+                if (clientQuery.empty) {
+                    const newClientRef = await db.collection('clients').add({
+                        name: name,
+                        phone: fullPhone
+                    });
+                    clientId = newClientRef.id;
+                } else {
+                    clientId = clientQuery.docs[0].id;
+                }
+
+                const balanceQuery = await db.collection('loyaltyBalances')
+                    .where('businessId', '==', state.currentUser.uid)
+                    .where('clientId', '==', clientId)
+                    .limit(1).get();
+
+                if (!balanceQuery.empty) {
+                    return showAlert('Este cliente ya está registrado en tu programa de lealtad.', 'info');
+                }
+
+                await db.collection('loyaltyBalances').add({
+                    businessId: state.currentUser.uid,
+                    clientId: clientId,
+                    stamps: 0
+                });
+                
+                showAlert('Cliente añadido con éxito.', 'success');
+                hideModal('addClient');
+                document.getElementById('add-client-name').value = '';
+                document.getElementById('add-client-phone').value = '';
+                renderCashierView();
+            } catch (error) {
+                console.error("Error al añadir cliente:", error);
+                showAlert('No se pudo añadir el cliente. Inténtalo de nuevo.');
+            }
+        };
 
         const handleAddStamp = async (e) => {
             const balanceId = e.target.dataset.balanceId;
@@ -497,7 +581,7 @@
                         showAlert('Este cliente ya tiene una recompensa lista.', 'info');
                     }
                 });
-                renderCashierView(); // Re-render para mostrar el cambio
+                renderCashierView();
             } catch (error) {
                 console.error("Error al añadir sello: ", error);
                 showAlert('No se pudo añadir el sello. Inténtalo de nuevo.');
@@ -526,7 +610,6 @@
                     rewardDescription: newDesc,
                     stampsRequired: newStamps
                 });
-                // Actualizar perfil local y re-renderizar
                 state.userProfile.rewardTitle = newTitle;
                 state.userProfile.rewardDescription = newDesc;
                 state.userProfile.stampsRequired = newStamps;
@@ -546,32 +629,46 @@
             splashScreen.classList.add('hidden');
             if (user) {
                 state.currentUser = user;
-                let profileDoc;
                 
-                // Determinar si es cliente o negocio
-                profileDoc = await db.collection('businesses').doc(user.uid).get();
-                if (profileDoc.exists) {
-                    state.userType = 'business';
-                    state.userProfile = profileDoc.data();
-                    authContainer.classList.add('hidden');
-                    appContainer.classList.remove('hidden');
-                    renderCashierView();
-                    showView('cashier-view');
-                } else {
-                    profileDoc = await db.collection('clients').doc(user.uid).get();
-                    if (profileDoc.exists) {
+                if (user.providerData.some(p => p.providerId === 'password')) {
+                    const businessDoc = await db.collection('businesses').doc(user.uid).get();
+                    if (businessDoc.exists) {
+                        state.userType = 'business';
+                        state.userProfile = businessDoc.data();
+                        authContainer.classList.add('hidden');
+                        appContainer.classList.remove('hidden');
+                        renderCashierView();
+                        showView('cashier-view');
+                    } else {
+                        console.warn("Business user without profile found, logging out.");
+                        auth.signOut();
+                    }
+                    return;
+                }
+
+                if (user.phoneNumber) {
+                    const clientQuery = await db.collection('clients').where('phone', '==', user.phoneNumber).limit(1).get();
+                    if (!clientQuery.empty) {
+                        const clientDoc = clientQuery.docs[0];
                         state.userType = 'client';
-                        state.userProfile = profileDoc.data();
+                        state.userProfile = { id: clientDoc.id, ...clientDoc.data() };
+                        
+                        if (!state.userProfile.authUid) {
+                            await clientDoc.ref.update({ authUid: user.uid });
+                        }
+
                         authContainer.classList.add('hidden');
                         appContainer.classList.remove('hidden');
                         renderDashboard();
                         showView('dashboard-view');
                     } else {
-                        // Usuario autenticado pero sin perfil (caso raro), desloguear
-                        console.warn("Usuario sin perfil encontrado, deslogueando.");
+                        console.warn("Client user without profile found, logging out.");
                         auth.signOut();
                     }
+                } else {
+                    auth.signOut();
                 }
+
             } else {
                 state.currentUser = null;
                 state.userProfile = null;
@@ -583,11 +680,9 @@
         });
 
         const init = () => {
-            // Registrar Service Worker
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    const swUrl = new URL('service-worker.js', window.location.href).href;
-                    navigator.serviceWorker.register(swUrl)
+                    navigator.serviceWorker.register('./service-worker.js')
                         .then(reg => console.log('✅ SW registered at scope:', reg.scope))
                         .catch(err => console.error('❌ SW registration failed:', err));
                 });
@@ -595,7 +690,6 @@
 
             setupRecaptcha();
 
-            // Asignar event listeners
             document.getElementById('login-btn').addEventListener('click', handleClientLogin);
             document.getElementById('register-btn').addEventListener('click', handleRegistration);
             document.getElementById('otp-verify-btn').addEventListener('click', handleOtpVerification);
@@ -610,7 +704,10 @@
             document.getElementById('save-reward-btn').addEventListener('click', handleSaveRewardConfig);
             document.getElementById('cancel-reward-btn').addEventListener('click', () => hideModal('rewardConfig'));
             
-            // Navegación entre vistas de auth
+            document.getElementById('add-client-fab').addEventListener('click', () => showModal('addClient'));
+            document.getElementById('cancel-add-client-btn').addEventListener('click', () => hideModal('addClient'));
+            document.getElementById('save-add-client-btn').addEventListener('click', handleAddClient);
+
             document.getElementById('go-to-register').addEventListener('click', (e) => { e.preventDefault(); showView('registration-view'); });
             document.getElementById('go-to-login').addEventListener('click', (e) => { e.preventDefault(); showView('client-login-view'); });
             document.getElementById('go-to-business-login').addEventListener('click', (e) => { e.preventDefault(); showView('business-login-view'); });
