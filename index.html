@@ -169,6 +169,17 @@
                     <div><label for="reward-title" class="block text-sm font-medium text-subtle-text">Título de la Recompensa</label><input type="text" id="reward-title" class="mt-1 block w-full rounded-md bg-dark-bg border-dark-surface shadow-sm focus:border-menta focus:ring-menta"></div>
                     <div><label for="reward-description" class="block text-sm font-medium text-subtle-text">Descripción Detallada</label><textarea id="reward-description" rows="3" class="mt-1 block w-full rounded-md bg-dark-bg border-dark-surface shadow-sm focus:border-menta focus:ring-menta"></textarea></div>
                     <div><label for="stamps-required" class="block text-sm font-medium text-subtle-text">Sellos Requeridos</label><input type="number" id="stamps-required" class="mt-1 block w-full rounded-md bg-dark-bg border-dark-surface shadow-sm focus:border-menta focus:ring-menta"></div>
+                    <div>
+                        <label class="block text-sm font-medium text-subtle-text">Color de la Tarjeta</label>
+                        <div id="color-swatches" class="mt-2 flex space-x-2">
+                            <button data-color="#27272A" class="h-8 w-8 rounded-full border-2 border-transparent ring-2 ring-light-text" style="background-color: #27272A;"></button>
+                            <button data-color="#57534E" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #57534E;"></button>
+                            <button data-color="#1E40AF" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #1E40AF;"></button>
+                            <button data-color="#BE123C" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #BE123C;"></button>
+                            <button data-color="#0F766E" class="h-8 w-8 rounded-full border-2 border-transparent" style="background-color: #0F766E;"></button>
+                        </div>
+                        <input type="hidden" id="card-color-input" value="#27272A">
+                    </div>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3"><button id="cancel-reward-btn" class="bg-zinc-600 text-light-text py-2 px-4 rounded-lg hover:bg-zinc-500 transition">Cancelar</button><button id="save-reward-btn" class="bg-menta text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-green-300 transition">Guardar</button></div>
             </div>
@@ -324,27 +335,48 @@
                 if (!businessDoc.exists) return '';
                 const program = businessDoc.data();
                 
-                const progress = Math.min((balance.stamps / program.stampsRequired) * 100, 100);
-                const isRewardReady = balance.stamps >= program.stampsRequired;
-                const circumference = 2 * Math.PI * 45;
+                const stamps = balance.stamps || 0;
+                const required = program.stampsRequired || 10;
+                const progress = Math.min((stamps / required) * 100, 100);
+                const isRewardReady = stamps >= required;
+                const circumference = 2 * Math.PI * 35; // r=35
                 const strokeDashoffset = circumference - (progress / 100) * circumference;
+                const cardColor = program.cardColor || '#27272A';
+
+                const hexToRgb = (hex) => {
+                    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                    return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null;
+                };
+                const rgb = hexToRgb(cardColor);
+                const luminance = rgb ? (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255 : 0;
+                const textColorClass = luminance > 0.5 ? 'text-dark-bg' : 'text-light-text';
+                const subTextColorClass = luminance > 0.5 ? 'text-zinc-600' : 'text-subtle-text';
 
                 return `
-                    <div class="bg-dark-surface rounded-xl shadow-lg overflow-hidden ${isRewardReady ? 'ring-2 ring-oro-suave' : ''}">
-                        <div class="p-5"><div class="flex items-center justify-between">
-                            <div class="flex-grow">
-                                <div class="uppercase tracking-wide text-sm text-menta font-bold">${program.name}</div>
-                                <p class="mt-1 text-2xl font-semibold">${balance.stamps}/${program.stampsRequired} <span class="text-lg font-normal text-subtle-text">Sellos</span></p>
-                                ${isRewardReady ? `<p class="mt-2 text-sm font-semibold text-oro-suave flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2V4z"/><path d="M5 12a2 2 0 00-2 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 00-2-2H5z"/></svg><b>Recompensa:&nbsp;</b>${program.rewardTitle}</p>` : ''}
+                    <div class="rounded-xl shadow-lg p-5 flex flex-col justify-between h-56 ${textColorClass} ${isRewardReady ? 'ring-2 ring-oro-suave' : ''}" style="background-color: ${cardColor};">
+                        <header class="flex justify-between items-start">
+                            <h3 class="uppercase tracking-wider text-lg font-bold">${program.name}</h3>
+                            <div class="font-semibold text-menta">Loyalfly</div>
+                        </header>
+                        
+                        <main class="flex items-center justify-between mt-2">
+                            <div>
+                                <p class="text-4xl font-semibold">${stamps}<span class="text-2xl ${subTextColorClass}">/${required}</span></p>
+                                <p class="text-sm ${subTextColorClass}">Sellos</p>
+                                ${isRewardReady ? `<p class="mt-2 text-sm font-semibold text-oro-suave">¡Recompensa lista!</p><p class="text-xs text-oro-suave/80">${program.rewardTitle}</p>` : ''}
                             </div>
-                            <div class="relative w-24 h-24">
-                                <svg class="w-full h-full" viewBox="0 0 100 100">
-                                    <circle class="text-zinc-700" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/>
-                                    <circle class="text-menta" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" style="stroke-dasharray: ${circumference}; stroke-dashoffset: ${strokeDashoffset}; transition: stroke-dashoffset 0.5s ease-out; transform: rotate(-90deg); transform-origin: 50% 50%; "/>
+                            <div class="relative w-20 h-20 flex-shrink-0">
+                                <svg class="w-full h-full" viewBox="0 0 80 80">
+                                    <circle class="${luminance > 0.5 ? 'text-black/20' : 'text-white/20'}" stroke-width="8" stroke="currentColor" fill="transparent" r="35" cx="40" cy="40"/>
+                                    <circle class="text-menta" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="35" cx="40" cy="40" style="stroke-dasharray: ${circumference}; stroke-dashoffset: ${strokeDashoffset}; transition: stroke-dashoffset 0.5s ease-out; transform: rotate(-90deg); transform-origin: 50% 50%;"/>
                                 </svg>
-                                <span class="absolute inset-0 flex items-center justify-center text-xl font-bold text-light-text">${Math.round(progress)}%</span>
+                                <span class="absolute inset-0 flex items-center justify-center text-lg font-bold">${Math.round(progress)}%</span>
                             </div>
-                        </div></div>
+                        </main>
+
+                        <footer class="mt-auto pt-2">
+                            <p class="font-mono text-lg tracking-wider uppercase">${state.userProfile.name}</p>
+                        </footer>
                     </div>`;
             });
 
@@ -494,7 +526,8 @@
                     email: email,
                     stampsRequired: 10,
                     rewardTitle: 'Producto Gratis',
-                    rewardDescription: 'Reclama un producto gratis por tu lealtad.'
+                    rewardDescription: 'Reclama un producto gratis por tu lealtad.',
+                    cardColor: '#27272A' // Default card color
                 });
                 // onAuthStateChanged se encargará de redirigir
             } catch (error) {
@@ -597,6 +630,17 @@
             document.getElementById('reward-title').value = state.userProfile.rewardTitle;
             document.getElementById('reward-description').value = state.userProfile.rewardDescription;
             document.getElementById('stamps-required').value = state.userProfile.stampsRequired;
+            
+            const currentColor = state.userProfile.cardColor || '#27272A';
+            document.getElementById('card-color-input').value = currentColor;
+            document.querySelectorAll('#color-swatches button').forEach(swatch => {
+                if (swatch.dataset.color === currentColor) {
+                    swatch.classList.add('ring-2', 'ring-light-text');
+                } else {
+                    swatch.classList.remove('ring-2', 'ring-light-text');
+                }
+            });
+
             showModal('rewardConfig');
         };
 
@@ -604,6 +648,7 @@
             const newTitle = document.getElementById('reward-title').value;
             const newDesc = document.getElementById('reward-description').value;
             const newStamps = parseInt(document.getElementById('stamps-required').value, 10);
+            const newColor = document.getElementById('card-color-input').value;
             
             if (!newTitle || !newDesc || isNaN(newStamps) || newStamps < 1) {
                 return showAlert('Por favor, completa todos los campos correctamente.');
@@ -613,11 +658,13 @@
                 await db.collection('businesses').doc(state.currentUser.uid).update({
                     rewardTitle: newTitle,
                     rewardDescription: newDesc,
-                    stampsRequired: newStamps
+                    stampsRequired: newStamps,
+                    cardColor: newColor
                 });
                 state.userProfile.rewardTitle = newTitle;
                 state.userProfile.rewardDescription = newDesc;
                 state.userProfile.stampsRequired = newStamps;
+                state.userProfile.cardColor = newColor;
                 hideModal('rewardConfig');
                 showAlert('Recompensa actualizada con éxito.', 'success');
                 renderCashierView();
@@ -713,6 +760,16 @@
             document.getElementById('add-client-fab').addEventListener('click', () => showModal('addClient'));
             document.getElementById('cancel-add-client-btn').addEventListener('click', () => hideModal('addClient'));
             document.getElementById('save-add-client-btn').addEventListener('click', handleAddClient);
+
+            document.querySelectorAll('#color-swatches button').forEach(swatch => {
+                swatch.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const selectedColor = swatch.dataset.color;
+                    document.getElementById('card-color-input').value = selectedColor;
+                    document.querySelectorAll('#color-swatches button').forEach(s => s.classList.remove('ring-2', 'ring-light-text'));
+                    swatch.classList.add('ring-2', 'ring-light-text');
+                });
+            });
 
             document.getElementById('go-to-register').addEventListener('click', (e) => { e.preventDefault(); showView('registration-view'); });
             document.getElementById('go-to-login').addEventListener('click', (e) => { e.preventDefault(); showView('client-login-view'); });
