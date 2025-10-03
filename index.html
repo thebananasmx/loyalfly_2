@@ -135,7 +135,7 @@
         </div>
 
         <!-- MODAL: OTP -->
-        <div id="otp-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
+        <div id="otp-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-40">
             <div class="bg-dark-surface rounded-lg shadow-xl p-8 w-full max-w-sm text-center">
                 <h2 class="text-xl font-bold text-menta mb-2">Verificación</h2>
                 <p class="text-subtle-text mb-6">Ingresa el código que te enviamos.</p>
@@ -147,7 +147,7 @@
         </div>
         
         <!-- MODAL: Configuración de Recompensa -->
-        <div id="reward-config-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
+        <div id="reward-config-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-40">
             <div class="bg-dark-surface rounded-lg shadow-xl p-8 w-full max-w-sm">
                 <h2 class="text-xl font-bold text-menta mb-4">Configurar Recompensa</h2>
                 <div class="space-y-4">
@@ -164,6 +164,22 @@
                     <button id="cancel-reward-btn" class="bg-zinc-600 text-light-text py-2 px-4 rounded-lg hover:bg-zinc-500 transition">Cancelar</button>
                     <button id="save-reward-btn" class="bg-menta text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-green-300 transition">Guardar</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Alerta General -->
+        <div id="alert-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+            <div class="bg-dark-surface rounded-lg shadow-xl p-6 w-full max-w-sm text-center">
+                <div id="alert-icon-container" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-menta mb-4">
+                    <svg id="alert-icon-svg" class="h-6 w-6 text-dark-bg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <!-- El path del ícono se insertará aquí dinámicamente -->
+                    </svg>
+                </div>
+                <h2 id="alert-title" class="text-xl font-bold text-light-text mb-2">Aviso</h2>
+                <p id="alert-message" class="text-subtle-text mb-6 px-4">Mensaje de la alerta.</p>
+                <button id="alert-ok-btn" class="w-full bg-menta text-dark-bg py-2 px-4 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition ease-in-out duration-300">
+                    Aceptar
+                </button>
             </div>
         </div>
 
@@ -201,43 +217,12 @@
             }
         ]
     }
+
+    ARCHIVO: service-worker.js
+    (Crea este archivo)
     
     NOTA: Asegúrate de crear una carpeta "images" y colocar los íconos "icon-192x192.png" y "icon-512x512.png".
     -->
-
-    <!-- 
-    ARCHIVO: service-worker.js
-    (Copia y pega este contenido en un nuevo archivo llamado "service-worker.js")
-
-    const CACHE_NAME = 'loyalfly-cache-v1';
-    const urlsToCache = [
-        './',
-        './index.html'
-    ];
-
-    self.addEventListener('install', event => {
-        event.waitUntil(
-            caches.open(CACHE_NAME)
-                .then(cache => {
-                    console.log('Opened cache');
-                    return cache.addAll(urlsToCache);
-                })
-        );
-    });
-
-    self.addEventListener('fetch', event => {
-        event.respondWith(
-            caches.match(event.request)
-                .then(response => {
-                    if (response) {
-                        return response;
-                    }
-                    return fetch(event.request);
-                })
-        );
-    });
-    -->
-
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -285,7 +270,8 @@
         };
         const modals = {
             otp: document.getElementById('otp-modal'),
-            rewardConfig: document.getElementById('reward-config-modal')
+            rewardConfig: document.getElementById('reward-config-modal'),
+            alert: document.getElementById('alert-modal')
         };
         // Entradas y Botones Login
         const phoneInput = document.getElementById('phone-input');
@@ -302,6 +288,13 @@
         const otpInput = document.getElementById('otp-input');
         const otpVerifyBtn = document.getElementById('otp-verify-btn');
         
+        // Alerta
+        const alertTitle = document.getElementById('alert-title');
+        const alertMessage = document.getElementById('alert-message');
+        const alertOkBtn = document.getElementById('alert-ok-btn');
+        const alertIconSvg = document.getElementById('alert-icon-svg');
+        const alertIconContainer = document.getElementById('alert-icon-container');
+
         // Generales
         const logoutBtn = document.getElementById('logout-btn');
         const goToCashierBtn = document.getElementById('go-to-cashier');
@@ -342,6 +335,33 @@
         // Funciones para mostrar/ocultar modales
         const showModal = (modalId) => modals[modalId].classList.remove('hidden');
         const hideModal = (modalId) => modals[modalId].classList.add('hidden');
+
+        // Lógica de Alertas
+        const ICONS = {
+            success: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />',
+            error: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />',
+            info: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />'
+        };
+
+        const showAlert = (message, type = 'error') => {
+            alertMessage.textContent = message;
+            alertIconSvg.innerHTML = ICONS[type] || ICONS.info;
+
+            if (type === 'error') {
+                alertTitle.textContent = 'Error';
+                alertIconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-500 mb-4';
+            } else if (type === 'success') {
+                alertTitle.textContent = 'Éxito';
+                alertIconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-menta mb-4';
+            } else {
+                alertTitle.textContent = 'Aviso';
+                alertIconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-500 mb-4';
+            }
+            
+            showModal('alert');
+        };
+
+        const hideAlert = () => hideModal('alert');
 
         // Lógica de Renderizado
         const renderDashboard = () => {
@@ -419,7 +439,7 @@
         const handleClientLogin = () => {
             const phone = phoneInput.value.replace(/\s/g, '');
             if (phone.length !== 10) {
-                alert('Por favor, ingresa un número de 10 dígitos.');
+                showAlert('Por favor, ingresa un número de 10 dígitos.', 'error');
                 return;
             }
             const client = db.get('clientAccounts').find(c => c.phone === phone);
@@ -429,7 +449,7 @@
                 showModal('otp');
                 otpInput.focus();
             } else {
-                alert('Número no encontrado. Por favor, regístrate.');
+                showAlert('Número no encontrado. Por favor, regístrate.', 'error');
             }
         };
         
@@ -438,17 +458,17 @@
             const phone = registerPhoneInput.value.replace(/\s/g, '');
 
             if (!name) {
-                alert('Por favor, ingresa tu nombre.');
+                showAlert('Por favor, ingresa tu nombre.', 'error');
                 return;
             }
             if (phone.length !== 10) {
-                alert('Por favor, ingresa un número de 10 dígitos.');
+                showAlert('Por favor, ingresa un número de 10 dígitos.', 'error');
                 return;
             }
 
             const existingClient = db.get('clientAccounts').find(c => c.phone === phone);
             if (existingClient) {
-                alert('Este número de teléfono ya está registrado. Por favor, inicia sesión.');
+                showAlert('Este número de teléfono ya está registrado. Por favor, inicia sesión.', 'error');
                 return;
             }
 
@@ -485,7 +505,7 @@
                 renderDashboard();
                 showView('dashboard-view');
             } else {
-                alert('Código inválido.');
+                showAlert('Código inválido.', 'error');
             }
         };
         
@@ -511,7 +531,7 @@
                 const program = db.get('businessPrograms').find(p => p.id === state.loggedInBusinessId);
                 // Evitar añadir sellos si la recompensa está lista para ser canjeada
                 if (balances[balanceIndex].stamps >= program.stampsRequired) {
-                    alert('Este cliente ya tiene una recompensa lista para canjear.');
+                    showAlert('Este cliente ya tiene una recompensa lista para canjear.', 'info');
                     return;
                 }
                 balances[balanceIndex].stamps++;
@@ -539,7 +559,7 @@
                 programs[programIndex].rewardDescription = newDesc;
                 db.set('businessPrograms', programs);
                 hideModal('rewardConfig');
-                alert('Recompensa actualizada');
+                showAlert('Recompensa actualizada con éxito.', 'success');
             }
         }
 
@@ -566,6 +586,7 @@
             registerBtn.addEventListener('click', handleRegistration);
             otpVerifyBtn.addEventListener('click', handleOtpVerification);
             logoutBtn.addEventListener('click', handleLogout);
+            alertOkBtn.addEventListener('click', hideAlert);
             
             // Navegación entre vistas
             goToRegisterBtn.addEventListener('click', (e) => { e.preventDefault(); showView('registration-view'); });
