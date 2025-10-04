@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loyalfly - Super Admin</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-bg': '#18181B', 'dark-surface': '#27272A', 'menta': '#34D399',
+                        'oro-suave': '#FBBF24', 'light-text': '#F4F4F5', 'subtle-text': '#A1A1AA',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #18181B; }
+        ::placeholder { color: #52525B; }
+        .file-input-label {
+            cursor: pointer;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            background-color: #3f3f46; /* zinc-700 */
+            color: #F4F4F5;
+            transition: background-color 0.2s;
+        }
+        .file-input-label:hover {
+            background-color: #52525b; /* zinc-600 */
+        }
+    </style>
+</head>
+<body class="text-light-text antialiased">
+
+    <div class="max-w-4xl mx-auto p-8 md:p-12">
+        <header class="border-b border-dark-surface pb-8 mb-12">
+            <h1 class="text-5xl font-bold text-menta">Loyalfly</h1>
+            <p class="text-2xl text-subtle-text mt-2">Panel de Súper Administrador</p>
+        </header>
+
+        <main class="space-y-16">
+            <!-- SECCIÓN SPLASH SCREEN -->
+            <section>
+                <h2 class="text-3xl font-bold mb-6 border-l-4 border-menta pl-4">Pantalla de Bienvenida (Splash)</h2>
+                <div class="bg-dark-surface p-6 rounded-lg shadow-lg space-y-4">
+                    <div>
+                        <label for="splash-title-input" class="block text-sm font-medium text-subtle-text mb-2">Título Principal</label>
+                        <input type="text" id="splash-title-input" class="block w-full rounded-lg bg-dark-bg border-dark-surface py-3 px-4 focus:border-menta focus:ring-menta sm:text-lg">
+                    </div>
+                    <div>
+                        <label for="splash-subtitle-input" class="block text-sm font-medium text-subtle-text mb-2">Subtítulo</label>
+                        <input type="text" id="splash-subtitle-input" class="block w-full rounded-lg bg-dark-bg border-dark-surface py-3 px-4 focus:border-menta focus:ring-menta sm:text-lg">
+                    </div>
+                    <div class="flex justify-end pt-2">
+                        <button id="save-splash-btn" class="bg-menta text-dark-bg py-2 px-6 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition">Guardar Cambios</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN DE ÍCONOS -->
+            <section>
+                <h2 class="text-3xl font-bold mb-6 border-l-4 border-menta pl-4">Íconos de la Aplicación</h2>
+                <div class="bg-dark-surface p-6 rounded-lg shadow-lg">
+                    <div class="bg-yellow-900/50 border border-yellow-700 text-yellow-300 px-4 py-3 rounded-lg mb-6" role="alert">
+                      <strong class="font-bold">Aviso Importante:</strong>
+                      <span class="block sm:inline"> La actualización de íconos requiere un nuevo despliegue de la aplicación. Subir un archivo aquí lo guardará en el sistema, pero un desarrollador debe actualizar manualmente los archivos `manifest.json` y `index.html` para que los cambios sean visibles para los usuarios.</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Ícono PWA -->
+                        <div class="space-y-4">
+                            <h3 class="text-xl font-semibold">Íconos PWA (Android y Web)</h3>
+                            <p class="text-sm text-subtle-text">Sube los íconos en formato PNG con transparencia. Tamaños recomendados: 192x192 y 512x512 píxeles.</p>
+                            
+                            <!-- Uploader para 192x192 -->
+                            <div>
+                                <p class="font-medium mb-2">Ícono 192x192</p>
+                                <div class="flex items-center gap-4">
+                                    <img id="pwa-192-preview" src="./images/icon-192x192.png" alt="Preview 192" class="w-16 h-16 rounded-lg bg-white/10 p-1">
+                                    <label class="file-input-label">
+                                        <span>Seleccionar archivo...</span>
+                                        <input type="file" id="pwa-192-input" class="hidden" accept="image/png">
+                                    </label>
+                                    <button id="upload-pwa-192-btn" class="bg-menta/80 text-dark-bg py-2 px-4 rounded-lg font-bold shadow-md hover:bg-menta transition text-sm">Subir</button>
+                                </div>
+                            </div>
+                            <!-- Uploader para 512x512 -->
+                             <div>
+                                <p class="font-medium mb-2">Ícono 512x512</p>
+                                <div class="flex items-center gap-4">
+                                    <img id="pwa-512-preview" src="./images/icon-512x512.png" alt="Preview 512" class="w-16 h-16 rounded-lg bg-white/10 p-1">
+                                    <label class="file-input-label">
+                                        <span>Seleccionar archivo...</span>
+                                        <input type="file" id="pwa-512-input" class="hidden" accept="image/png">
+                                    </label>
+                                     <button id="upload-pwa-512-btn" class="bg-menta/80 text-dark-bg py-2 px-4 rounded-lg font-bold shadow-md hover:bg-menta transition text-sm">Subir</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ícono Apple -->
+                        <div class="space-y-4">
+                            <h3 class="text-xl font-semibold">Ícono de Inicio (iOS)</h3>
+                            <p class="text-sm text-subtle-text">Sube el `apple-touch-icon`. Formato PNG, sin transparencia. Tamaño recomendado: 180x180 píxeles.</p>
+                             <div>
+                                <p class="font-medium mb-2">Ícono 180x180 (Apple)</p>
+                                <div class="flex items-center gap-4">
+                                    <img id="apple-preview" src="./images/icon-192x192.png" alt="Preview Apple Touch Icon" class="w-16 h-16 rounded-lg bg-white/10 p-1">
+                                    <label class="file-input-label">
+                                        <span>Seleccionar archivo...</span>
+                                        <input type="file" id="apple-input" class="hidden" accept="image/png">
+                                    </label>
+                                    <button id="upload-apple-btn" class="bg-menta/80 text-dark-bg py-2 px-4 rounded-lg font-bold shadow-md hover:bg-menta transition text-sm">Subir</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <div id="alert-container" class="hidden fixed bottom-5 right-5 bg-menta text-dark-bg font-bold py-3 px-5 rounded-lg shadow-xl animate-bounce">
+            <p id="alert-message"></p>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // =================================================================
+            // CONFIGURACIÓN DE FIREBASE
+            // =================================================================
+            const firebaseConfig = {
+                apiKey: "AIzaSyDmSlCtdNDl2oVLy3z1gBJuf8Isopafryk",
+                authDomain: "loyalflyapp.firebaseapp.com",
+                projectId: "loyalflyapp",
+                storageBucket: "loyalflyapp.firebasestorage.app",
+                messagingSenderId: "1093662489331",
+                appId: "1:1093662489331:web:1ba3a3fb3b0939d4411586",
+                measurementId: "G-5B3HNP5R74"
+            };
+
+            const app = firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+            const storage = firebase.storage();
+
+            const showAlert = (message) => {
+                const container = document.getElementById('alert-container');
+                document.getElementById('alert-message').textContent = message;
+                container.classList.remove('hidden');
+                setTimeout(() => container.classList.add('hidden'), 3000);
+            };
+
+            // =================================================================
+            // LÓGICA DE SPLASH SCREEN
+            // =================================================================
+            const splashTitleInput = document.getElementById('splash-title-input');
+            const splashSubtitleInput = document.getElementById('splash-subtitle-input');
+
+            const loadSplashConfig = async () => {
+                try {
+                    const configDoc = await db.collection('config').doc('global').get();
+                    if (configDoc.exists) {
+                        const config = configDoc.data();
+                        splashTitleInput.value = config.splashTitle || '';
+                        splashSubtitleInput.value = config.splashSubtitle || '';
+                    }
+                } catch (error) {
+                    console.error("Error loading config:", error);
+                    showAlert('Error al cargar la configuración.');
+                }
+            };
+            
+            document.getElementById('save-splash-btn').addEventListener('click', async () => {
+                const title = splashTitleInput.value.trim();
+                const subtitle = splashSubtitleInput.value.trim();
+                if (!title || !subtitle) {
+                    return showAlert('Ambos campos son requeridos.');
+                }
+                try {
+                    await db.collection('config').doc('global').set({
+                        splashTitle: title,
+                        splashSubtitle: subtitle
+                    }, { merge: true });
+                    showAlert('Configuración guardada con éxito.');
+                } catch (error) {
+                    console.error("Error saving config:", error);
+                    showAlert('Error al guardar la configuración.');
+                }
+            });
+
+            // =================================================================
+            // LÓGICA DE UPLOAD DE ÍCONOS
+            // =================================================================
+            const setupIconUploader = (inputId, previewId, uploadBtnId, storagePath) => {
+                const fileInput = document.getElementById(inputId);
+                const previewImg = document.getElementById(previewId);
+                const uploadBtn = document.getElementById(uploadBtnId);
+                let selectedFile = null;
+
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        selectedFile = e.target.files[0];
+                        previewImg.src = URL.createObjectURL(selectedFile);
+                    }
+                });
+                
+                uploadBtn.addEventListener('click', async () => {
+                    if (!selectedFile) {
+                        return showAlert('Primero selecciona un archivo.');
+                    }
+                    uploadBtn.textContent = 'Subiendo...';
+                    uploadBtn.disabled = true;
+                    
+                    try {
+                        const storageRef = storage.ref(storagePath);
+                        await storageRef.put(selectedFile);
+                        showAlert(`Ícono ${storagePath.split('/').pop()} subido.`);
+                    } catch (error) {
+                        console.error(`Error uploading ${storagePath}:`, error);
+                        showAlert('Error al subir el archivo.');
+                    } finally {
+                        uploadBtn.textContent = 'Subir';
+                        uploadBtn.disabled = false;
+                    }
+                });
+            };
+
+            setupIconUploader('pwa-192-input', 'pwa-192-preview', 'upload-pwa-192-btn', 'app-icons/icon-192x192.png');
+            setupIconUploader('pwa-512-input', 'pwa-512-preview', 'upload-pwa-512-btn', 'app-icons/icon-512x512.png');
+            setupIconUploader('apple-input', 'apple-preview', 'upload-apple-btn', 'app-icons/apple-touch-icon.png');
+            
+            // Inicializar la página
+            loadSplashConfig();
+        });
+    </script>
+</body>
+</html>

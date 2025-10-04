@@ -33,13 +33,37 @@
         ::placeholder { color: #52525B; }
         #splash-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #18181B; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease-out; }
         #splash-screen.hidden { opacity: 0; pointer-events: none; }
+
+        /* View transition styles */
+        #auth-container, #app-container {
+            position: relative;
+        }
+        #auth-container > div, #app-container > div {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            pointer-events: none;
+            transform: translateY(15px); /* Start slightly below */
+        }
+
+        /* Active view is visible and interactive */
+        #auth-container > div.active, #app-container > div.active {
+            opacity: 1;
+            pointer-events: auto;
+            position: relative; /* Let it define the height of the container */
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body class="text-light-text antialiased">
 
     <div id="splash-screen">
-        <h1 class="text-5xl font-bold text-menta">Loyalfly</h1>
-        <p class="text-subtle-text mt-2">Cargando tu cartera...</p>
+        <h1 id="splash-title" class="text-5xl font-bold text-menta">Loyalfly</h1>
+        <p id="splash-subtitle" class="text-subtle-text mt-2">Cargando tu cartera...</p>
     </div>
 
     <div id="app" class="max-w-md mx-auto min-h-screen bg-dark-bg shadow-lg">
@@ -47,7 +71,7 @@
         <!-- VISTAS DE AUTENTICACIÓN -->
         <div id="auth-container">
             <!-- VISTA: LOGIN DE CLIENTE -->
-            <div id="client-login-view" class="flex flex-col items-center justify-center min-h-screen p-8">
+            <div id="client-login-view" class="active flex flex-col items-center justify-center min-h-screen p-8">
                 <h1 class="text-5xl font-bold text-menta mb-2">Loyalfly</h1>
                 <p class="text-subtle-text mb-12">Tu cartera de lealtad digital.</p>
                 <div class="w-full">
@@ -65,7 +89,7 @@
             </div>
 
             <!-- VISTA: REGISTRO DE CLIENTE -->
-            <div id="registration-view" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
+            <div id="registration-view" class="flex flex-col items-center justify-center min-h-screen p-8">
                 <h1 class="text-3xl font-bold text-menta mb-2">Registro Nuevo</h1>
                 <p class="text-subtle-text mb-8">Crea tu cuenta para ganar recompensas.</p>
                 <div class="w-full space-y-4">
@@ -86,7 +110,7 @@
             </div>
             
             <!-- VISTA: LOGIN DE NEGOCIO -->
-            <div id="business-login-view" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
+            <div id="business-login-view" class="flex flex-col items-center justify-center min-h-screen p-8">
                 <h1 class="text-3xl font-bold text-menta mb-2">Acceso de Negocio</h1>
                 <p class="text-subtle-text mb-8">Inicia sesión para administrar tus clientes.</p>
                 <div class="w-full space-y-4">
@@ -107,7 +131,7 @@
             </div>
 
             <!-- VISTA: REGISTRO DE NEGOCIO -->
-            <div id="business-register-view" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
+            <div id="business-register-view" class="flex flex-col items-center justify-center min-h-screen p-8">
                 <h1 class="text-3xl font-bold text-menta mb-2">Registro de Negocio</h1>
                 <p class="text-subtle-text mb-8">Crea una cuenta para tu negocio.</p>
                 <div class="w-full space-y-4">
@@ -132,13 +156,13 @@
         <!-- VISTAS DE LA APLICACIÓN (USUARIO LOGUEADO) -->
         <div id="app-container" class="hidden">
             <!-- VISTA: DASHBOARD DE TARJETAS DE CLIENTE -->
-            <div id="dashboard-view" class="hidden flex flex-col h-screen">
+            <div id="dashboard-view" class="flex flex-col h-screen">
                 <header class="sticky top-0 bg-dark-bg/80 backdrop-blur-sm p-4 border-b border-dark-surface flex justify-between items-center"><h1 class="text-2xl font-bold text-menta">Loyalfly</h1><button id="client-logout-btn" class="text-sm text-menta hover:underline">Salir</button></header>
                 <main id="cards-container" class="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar pb-20"></main>
             </div>
 
             <!-- VISTA: CAJERO -->
-            <div id="cashier-view" class="hidden flex flex-col h-screen relative">
+            <div id="cashier-view" class="flex flex-col h-screen relative">
                 <header class="sticky top-0 bg-dark-bg/80 backdrop-blur-sm p-4 border-b border-dark-surface flex justify-between items-center">
                     <div><h1 class="text-2xl font-bold text-menta" id="business-name-header"></h1><p class="text-sm text-subtle-text">Panel de Cajero</p></div>
                     <div class="flex items-center">
@@ -236,9 +260,9 @@
     <div id="recaptcha-container"></div>
 
     <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -246,19 +270,15 @@
         // CONFIGURACIÓN DE FIREBASE
         // =================================================================
         
-        /* 
-        TODO: PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE 
-        Este es un ejemplo, reemplázalo con el tuyo desde la consola de Firebase.
-        */
         const firebaseConfig = {
-    apiKey: "AIzaSyDmSlCtdNDl2oVLy3z1gBJuf8Isopafryk",
-    authDomain: "loyalflyapp.firebaseapp.com",
-    projectId: "loyalflyapp",
-    storageBucket: "loyalflyapp.firebasestorage.app",
-    messagingSenderId: "1093662489331",
-    appId: "1:1093662489331:web:1ba3a3fb3b0939d4411586",
-    measurementId: "G-5B3HNP5R74"
-  };
+            apiKey: "AIzaSyDmSlCtdNDl2oVLy3z1gBJuf8Isopafryk",
+            authDomain: "loyalflyapp.firebaseapp.com",
+            projectId: "loyalflyapp",
+            storageBucket: "loyalflyapp.firebasestorage.app",
+            messagingSenderId: "1093662489331",
+            appId: "1:1093662489331:web:1ba3a3fb3b0939d4411586",
+            measurementId: "G-5B3HNP5R74"
+        };
 
         // Inicializar Firebase
         const app = firebase.initializeApp(firebaseConfig);
@@ -274,20 +294,14 @@
             userType: null, // 'client' o 'business'
             confirmationResult: null // Para la verificación OTP
         };
+        let currentViewId = 'client-login-view';
 
         // =================================================================
         // SELECTORES DEL DOM
         // =================================================================
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
-        const views = {
-            clientLogin: document.getElementById('client-login-view'),
-            registration: document.getElementById('registration-view'),
-            businessLogin: document.getElementById('business-login-view'),
-            businessRegister: document.getElementById('business-register-view'),
-            dashboard: document.getElementById('dashboard-view'),
-            cashier: document.getElementById('cashier-view')
-        };
+        
         const modals = {
             otp: document.getElementById('otp-modal'),
             rewardConfig: document.getElementById('reward-config-modal'),
@@ -300,9 +314,20 @@
         // LÓGICA DE NAVEGACIÓN Y MODALES
         // =================================================================
         const showView = (viewId) => {
-            Object.values(views).forEach(view => view.classList.add('hidden'));
+            if (viewId === currentViewId) return;
+
+            const currentView = document.getElementById(currentViewId);
             const targetView = document.getElementById(viewId);
-            if (targetView) targetView.classList.remove('hidden');
+
+            if (currentView) {
+                currentView.classList.remove('active');
+            }
+
+            if (targetView) {
+                targetView.classList.add('active');
+            }
+            
+            currentViewId = viewId;
         };
 
         const showModal = (modalId) => modals[modalId] && modals[modalId].classList.remove('hidden');
@@ -325,6 +350,20 @@
             else { titleEl.textContent = 'Aviso'; iconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-500 mb-4'; }
             
             showModal('alert');
+        };
+
+        const loadSplashScreenConfig = async () => {
+            try {
+                const configDoc = await db.collection('config').doc('global').get();
+                if (configDoc.exists) {
+                    const config = configDoc.data();
+                    document.getElementById('splash-title').textContent = config.splashTitle || 'Loyalfly';
+                    document.getElementById('splash-subtitle').textContent = config.splashSubtitle || 'Cargando tu cartera...';
+                }
+            } catch (error) {
+                console.error("Error loading splash screen config:", error);
+                // La app continuará con los valores por defecto
+            }
         };
 
         // =================================================================
@@ -697,7 +736,6 @@
         // INICIALIZACIÓN Y MANEJO DE ESTADO DE AUTH
         // =================================================================
         auth.onAuthStateChanged(async (user) => {
-            splashScreen.classList.add('hidden');
             if (user) {
                 state.currentUser = user;
                 
@@ -748,17 +786,21 @@
                 authContainer.classList.remove('hidden');
                 showView('client-login-view');
             }
+            splashScreen.classList.add('hidden');
         });
 
-        const init = () => {
+        const init = async () => {
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('./service-worker.js')
+                    // Use an absolute path to prevent cross-origin issues in some environments.
+                    const serviceWorkerUrl = `${window.location.origin}/service-worker.js`;
+                    navigator.serviceWorker.register(serviceWorkerUrl)
                         .then(reg => console.log('✅ SW registered at scope:', reg.scope))
                         .catch(err => console.error('❌ SW registration failed:', err));
                 });
             }
 
+            await loadSplashScreenConfig();
             setupRecaptcha();
 
             document.getElementById('login-btn').addEventListener('click', handleClientLogin);
