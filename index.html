@@ -259,17 +259,36 @@
     <!-- Contenedor para reCAPTCHA, necesario para la verificación por SMS -->
     <div id="recaptcha-container"></div>
 
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            RecaptchaVerifier, 
+            signInWithPhoneNumber, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            where, 
+            query, 
+            addDoc, 
+            doc, 
+            getDoc, 
+            updateDoc, 
+            runTransaction, 
+            setDoc,
+            limit
+        } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
         // =================================================================
         // CONFIGURACIÓN DE FIREBASE
         // =================================================================
-        
+
         const firebaseConfig = {
             apiKey: "AIzaSyDmSlCtdNDl2oVLy3z1gBJuf8Isopafryk",
             authDomain: "loyalflyapp.firebaseapp.com",
@@ -281,19 +300,20 @@
         };
 
         // Inicializar Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
         // =================================================================
         // ESTADO GLOBAL DE LA APP
         // =================================================================
         let state = {
-            currentUser: null,
+            authUser: null, // Almacenará un objeto plano con datos del usuario para evitar errores de serialización circulares
             userProfile: null, // Almacenará datos de 'clients' o 'businesses' de Firestore
             userType: null, // 'client' o 'business'
-            confirmationResult: null // Para la verificación OTP
         };
+        // El objeto confirmationResult se mantiene fuera del estado global para evitar errores de estructura circular.
+        let confirmationResult = null;
         let currentViewId = 'client-login-view';
 
         // =================================================================
@@ -301,7 +321,7 @@
         // =================================================================
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
-        
+
         const modals = {
             otp: document.getElementById('otp-modal'),
             rewardConfig: document.getElementById('reward-config-modal'),
@@ -354,8 +374,9 @@
 
         const loadSplashScreenConfig = async () => {
             try {
-                const configDoc = await db.collection('config').doc('global').get();
-                if (configDoc.exists) {
+                const configDocRef = doc(db, 'config', 'global');
+                const configDoc = await getDoc(configDocRef);
+                if (configDoc.exists()) {
                     const config = configDoc.data();
                     document.getElementById('splash-title').textContent = config.splashTitle || 'Loyalfly';
                     document.getElementById('splash-subtitle').textContent = config.splashSubtitle || 'Cargando tu cartera...';
@@ -373,7 +394,9 @@
             const cardsContainer = document.getElementById('cards-container');
             cardsContainer.innerHTML = `<p class="text-subtle-text text-center mt-4">Cargando tus tarjetas...</p>`;
             
-            const balancesSnapshot = await db.collection('loyaltyBalances').where('clientId', '==', state.userProfile.id).get();
+            const balancesQuery = query(collection(db, 'loyaltyBalances'), where('clientId', '==', state.userProfile.id));
+            const balancesSnapshot = await getDocs(balancesQuery);
+            
             if (balancesSnapshot.empty) {
                 cardsContainer.innerHTML = `<div class="text-center text-subtle-text mt-10"><p>Aún no tienes tarjetas de lealtad.</p></div>`;
                 return;
@@ -381,8 +404,10 @@
 
             const cardPromises = balancesSnapshot.docs.map(async (doc) => {
                 const balance = doc.data();
-                const businessDoc = await db.collection('businesses').doc(balance.businessId).get();
-                if (!businessDoc.exists) return '';
+                const businessDocRef = doc(db, 'businesses', balance.businessId);
+                const businessDoc = await getDoc(businessDocRef);
+
+                if (!businessDoc.exists()) return '';
                 const program = businessDoc.data();
                 
                 const stamps = balance.stamps || 0;
@@ -438,16 +463,19 @@
             document.getElementById('business-name-header').textContent = state.userProfile.name;
             clientsListContainer.innerHTML = `<p class="text-subtle-text text-center mt-4">Cargando clientes...</p>`;
 
-            const balancesSnapshot = await db.collection('loyaltyBalances').where('businessId', '==', state.currentUser.uid).get();
+            const balancesQuery = query(collection(db, 'loyaltyBalances'), where('businessId', '==', state.authUser.uid));
+            const balancesSnapshot = await getDocs(balancesQuery);
+
             if (balancesSnapshot.empty) {
                 clientsListContainer.innerHTML = `<div class="text-center text-subtle-text mt-10 p-4"><p>Aún no tienes clientes registrados en tu programa de lealtad.</p></div>`;
                 return;
             }
 
-            const clientPromises = balancesSnapshot.docs.map(async (doc) => {
-                const balance = doc.data();
-                const clientDoc = await db.collection('clients').doc(balance.clientId).get();
-                if (!clientDoc.exists) return '';
+            const clientPromises = balancesSnapshot.docs.map(async (balanceDoc) => {
+                const balance = balanceDoc.data();
+                const clientDocRef = doc(db, 'clients', balance.clientId);
+                const clientDoc = await getDoc(clientDocRef);
+                if (!clientDoc.exists()) return '';
                 const client = clientDoc.data();
                 
                 return `
@@ -457,23 +485,30 @@
                         <p class="text-sm text-subtle-text">${client.phone}</p>
                         <p class="text-sm font-medium text-menta mt-1">${balance.stamps} / ${state.userProfile.stampsRequired} sellos</p>
                     </div>
-                    <button data-balance-id="${doc.id}" class="add-stamp-btn bg-menta text-dark-bg py-3 px-5 rounded-lg font-bold shadow-md hover:bg-green-300 transition">+1 Sello</button>
+                    <button data-balance-id="${balanceDoc.id}" class="add-stamp-btn bg-menta text-dark-bg py-3 px-5 rounded-lg font-bold shadow-md hover:bg-green-300 transition">+1 Sello</button>
                 </div>`;
             });
 
             clientsListContainer.innerHTML = (await Promise.all(clientPromises)).join('');
             document.querySelectorAll('.add-stamp-btn').forEach(btn => btn.addEventListener('click', handleAddStamp));
         };
-        
+
         // =================================================================
         // LÓGICA DE AUTENTICACIÓN Y FIREBASE
         // =================================================================
-        
+
         const setupRecaptcha = () => {
-            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                'size': 'invisible',
-                'callback': (response) => { /* reCAPTCHA solved */ }
-            });
+            // Pass the actual DOM element instead of its ID string to the constructor
+            // to prevent "Cannot create property 'callback' on string" error.
+            const recaptchaContainer = document.getElementById('recaptcha-container');
+            if (recaptchaContainer) {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, recaptchaContainer, {
+                    'size': 'invisible',
+                    'callback': (response) => { /* reCAPTCHA solved */ }
+                });
+            } else {
+                console.error("The reCAPTCHA container element ('recaptcha-container') was not found in the DOM.");
+            }
         };
 
         const handleClientLogin = async () => {
@@ -482,20 +517,21 @@
             if (phone.length !== 10) return showAlert('Por favor, ingresa un número de 10 dígitos.');
             
             const fullPhone = `+52${phone}`;
-            const clientQuery = await db.collection('clients').where('phone', '==', fullPhone).get();
+            const clientsQuery = query(collection(db, 'clients'), where('phone', '==', fullPhone));
+            const clientSnapshot = await getDocs(clientsQuery);
 
-            if (clientQuery.empty) {
+            if (clientSnapshot.empty) {
                 return showAlert('Número no encontrado. Por favor, regístrate.');
             }
 
             try {
-                state.confirmationResult = await auth.signInWithPhoneNumber(fullPhone, window.recaptchaVerifier);
+                confirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
                 showModal('otp');
                 document.getElementById('otp-input').focus();
             } catch (error) {
                 console.error("Error al enviar SMS:", error);
                 showAlert('No se pudo enviar el código. Intenta de nuevo.');
-                window.recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
+                // Recaptcha reset is handled automatically by the SDK in modular versions
             }
         };
 
@@ -507,60 +543,58 @@
             if (phone.length !== 10) return showAlert('Por favor, ingresa un número de 10 dígitos.');
 
             const fullPhone = `+52${phone}`;
-            const clientQuery = await db.collection('clients').where('phone', '==', fullPhone).get();
-            if (!clientQuery.empty && clientQuery.docs[0].data().authUid) {
+            const clientsQuery = query(collection(db, 'clients'), where('phone', '==', fullPhone));
+            const clientSnapshot = await getDocs(clientsQuery);
+            
+            if (!clientSnapshot.empty && clientSnapshot.docs[0].data().authUid) {
                 return showAlert('Este número ya está registrado. Por favor, inicia sesión.');
             }
 
             try {
-                // Primero enviamos el SMS y luego creamos el perfil del cliente cuando verifique
-                state.confirmationResult = await auth.signInWithPhoneNumber(fullPhone, window.recaptchaVerifier);
-                
-                // Guardamos los datos de registro temporalmente
+                confirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
                 sessionStorage.setItem('pendingRegistration', JSON.stringify({ name, phone: fullPhone }));
-
                 showModal('otp');
                 document.getElementById('otp-input').focus();
             } catch (error) {
                 console.error("Error al enviar SMS en registro:", error);
                 showAlert('No se pudo enviar el código. Intenta de nuevo.');
-                window.recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
             }
         };
-        
+
         const handleOtpVerification = async () => {
             const otp = document.getElementById('otp-input').value;
-            if (otp.length !== 6 || !state.confirmationResult) return showAlert('Código inválido.');
+            if (otp.length !== 6 || !confirmationResult) return showAlert('Código inválido.');
             
             try {
-                const result = await state.confirmationResult.confirm(otp);
+                const result = await confirmationResult.confirm(otp);
                 const user = result.user;
                 
                 const pendingRegistration = JSON.parse(sessionStorage.getItem('pendingRegistration'));
                 if (pendingRegistration && user.phoneNumber === pendingRegistration.phone) {
-                    const clientQuery = await db.collection('clients').where('phone', '==', user.phoneNumber).limit(1).get();
-                    if (clientQuery.empty) {
-                        await db.collection('clients').add({
+                    const clientQuery = query(collection(db, 'clients'), where('phone', '==', user.phoneNumber), limit(1));
+                    const clientSnapshot = await getDocs(clientQuery);
+
+                    if (clientSnapshot.empty) {
+                        await addDoc(collection(db, 'clients'), {
                             name: pendingRegistration.name,
                             phone: user.phoneNumber,
                             authUid: user.uid
                         });
                     } else {
-                        const clientDocRef = clientQuery.docs[0].ref;
-                        await clientDocRef.update({ authUid: user.uid, name: pendingRegistration.name });
+                        const clientDocRef = clientSnapshot.docs[0].ref;
+                        await updateDoc(clientDocRef, { authUid: user.uid, name: pendingRegistration.name });
                     }
                     sessionStorage.removeItem('pendingRegistration');
                 }
                 
                 hideModal('otp');
                 document.getElementById('otp-input').value = '';
-                // onAuthStateChanged se encargará del resto
             } catch (error) {
                 console.error("Error de verificación OTP:", error);
                 showAlert('Código incorrecto. Intenta de nuevo.');
             }
         };
-        
+
         const handleBusinessRegister = async () => {
             const name = document.getElementById('business-name-register').value.trim();
             const email = document.getElementById('business-email-register').value.trim();
@@ -568,18 +602,18 @@
             if (!name || !email || password.length < 6) return showAlert('Por favor completa todos los campos. La contraseña debe tener al menos 6 caracteres.');
             
             try {
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                await db.collection('businesses').doc(user.uid).set({
+                const businessDocRef = doc(db, 'businesses', user.uid);
+                await setDoc(businessDocRef, {
                     name: name,
                     email: email,
                     stampsRequired: 10,
                     rewardTitle: 'Producto Gratis',
                     rewardDescription: 'Reclama un producto gratis por tu lealtad.',
-                    cardColor: '#27272A' // Default card color
+                    cardColor: '#27272A'
                 });
-                // onAuthStateChanged se encargará de redirigir
             } catch (error) {
                 console.error("Error de registro de negocio:", error);
                 showAlert(error.code === 'auth/email-already-in-use' ? 'Este correo ya está en uso.' : 'Error al registrar la cuenta.');
@@ -592,8 +626,7 @@
             if (!email || !password) return showAlert('Por favor, ingresa tu correo y contraseña.');
             
             try {
-                await auth.signInWithEmailAndPassword(email, password);
-                // onAuthStateChanged se encargará de redirigir
+                await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
                 console.error("Error de inicio de sesión de negocio:", error);
                 showAlert('Correo o contraseña incorrectos.');
@@ -601,9 +634,9 @@
         };
 
         const handleLogout = () => {
-            auth.signOut();
+            signOut(auth);
         };
-        
+
         const handleAddClient = async () => {
             const name = document.getElementById('add-client-name').value.trim();
             const phone = document.getElementById('add-client-phone').value.replace(/\s/g, '');
@@ -615,29 +648,29 @@
             let clientId;
 
             try {
-                const clientQuery = await db.collection('clients').where('phone', '==', fullPhone).limit(1).get();
+                const clientQuery = query(collection(db, 'clients'), where('phone', '==', fullPhone), limit(1));
+                const clientSnapshot = await getDocs(clientQuery);
 
-                if (clientQuery.empty) {
-                    const newClientRef = await db.collection('clients').add({
-                        name: name,
-                        phone: fullPhone
-                    });
+                if (clientSnapshot.empty) {
+                    const newClientRef = await addDoc(collection(db, 'clients'), { name: name, phone: fullPhone });
                     clientId = newClientRef.id;
                 } else {
-                    clientId = clientQuery.docs[0].id;
+                    clientId = clientSnapshot.docs[0].id;
                 }
 
-                const balanceQuery = await db.collection('loyaltyBalances')
-                    .where('businessId', '==', state.currentUser.uid)
-                    .where('clientId', '==', clientId)
-                    .limit(1).get();
+                const balanceQuery = query(collection(db, 'loyaltyBalances'), 
+                    where('businessId', '==', state.authUser.uid), 
+                    where('clientId', '==', clientId), 
+                    limit(1)
+                );
+                const balanceSnapshot = await getDocs(balanceQuery);
 
-                if (!balanceQuery.empty) {
+                if (!balanceSnapshot.empty) {
                     return showAlert('Este cliente ya está registrado en tu programa de lealtad.', 'info');
                 }
 
-                await db.collection('loyaltyBalances').add({
-                    businessId: state.currentUser.uid,
+                await addDoc(collection(db, 'loyaltyBalances'), {
+                    businessId: state.authUser.uid,
                     clientId: clientId,
                     stamps: 0
                 });
@@ -655,12 +688,12 @@
 
         const handleAddStamp = async (e) => {
             const balanceId = e.target.dataset.balanceId;
-            const balanceRef = db.collection('loyaltyBalances').doc(balanceId);
+            const balanceRef = doc(db, 'loyaltyBalances', balanceId);
             
             try {
-                await db.runTransaction(async (transaction) => {
+                await runTransaction(db, async (transaction) => {
                     const balanceDoc = await transaction.get(balanceRef);
-                    if (!balanceDoc.exists) throw "El documento no existe";
+                    if (!balanceDoc.exists()) throw "El documento no existe";
                     
                     const currentStamps = balanceDoc.data().stamps;
                     if (currentStamps < state.userProfile.stampsRequired) {
@@ -679,7 +712,7 @@
         const handleShowRewardConfig = () => {
             document.getElementById('reward-title').value = state.userProfile.rewardTitle;
             document.getElementById('reward-description').value = state.userProfile.rewardDescription;
-            document.getElementById('stamps-required').value = state.userProfile.stampsRequired;
+            document.getElementById('stamps-required').value = String(state.userProfile.stampsRequired);
             
             const currentColor = state.userProfile.cardColor || '#27272A';
             document.getElementById('card-color-input').value = currentColor;
@@ -689,11 +722,9 @@
             customColorPicker.value = currentColor;
             customColorPreview.style.backgroundColor = currentColor;
 
-            let isSwatchSelected = false;
             document.querySelectorAll('#color-swatches button').forEach(swatch => {
                 if (swatch.dataset.color === currentColor) {
                     swatch.classList.add('ring-2', 'ring-light-text');
-                    isSwatchSelected = true;
                 } else {
                     swatch.classList.remove('ring-2', 'ring-light-text');
                 }
@@ -713,7 +744,8 @@
             }
 
             try {
-                await db.collection('businesses').doc(state.currentUser.uid).update({
+                const businessDocRef = doc(db, 'businesses', state.authUser.uid);
+                await updateDoc(businessDocRef, {
                     rewardTitle: newTitle,
                     rewardDescription: newDesc,
                     stampsRequired: newStamps,
@@ -735,13 +767,20 @@
         // =================================================================
         // INICIALIZACIÓN Y MANEJO DE ESTADO DE AUTH
         // =================================================================
-        auth.onAuthStateChanged(async (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                state.currentUser = user;
+                // Almacenar un objeto de usuario plano y serializable en el estado global.
+                // Se elimina `providerData` para prevenir errores de "estructura circular a JSON".
+                state.authUser = {
+                    uid: user.uid,
+                    email: user.email,
+                    phoneNumber: user.phoneNumber
+                };
                 
                 if (user.providerData.some(p => p.providerId === 'password')) {
-                    const businessDoc = await db.collection('businesses').doc(user.uid).get();
-                    if (businessDoc.exists) {
+                    const businessDocRef = doc(db, 'businesses', user.uid);
+                    const businessDoc = await getDoc(businessDocRef);
+                    if (businessDoc.exists()) {
                         state.userType = 'business';
                         state.userProfile = businessDoc.data();
                         authContainer.classList.add('hidden');
@@ -750,20 +789,22 @@
                         showView('cashier-view');
                     } else {
                         console.warn("Business user without profile found, logging out.");
-                        auth.signOut();
+                        signOut(auth);
                     }
                     return;
                 }
 
                 if (user.phoneNumber) {
-                    const clientQuery = await db.collection('clients').where('phone', '==', user.phoneNumber).limit(1).get();
-                    if (!clientQuery.empty) {
-                        const clientDoc = clientQuery.docs[0];
+                    const clientQuery = query(collection(db, 'clients'), where('phone', '==', user.phoneNumber), limit(1));
+                    const clientSnapshot = await getDocs(clientQuery);
+
+                    if (!clientSnapshot.empty) {
+                        const clientDoc = clientSnapshot.docs[0];
                         state.userType = 'client';
                         state.userProfile = { id: clientDoc.id, ...clientDoc.data() };
                         
                         if (!state.userProfile.authUid) {
-                            await clientDoc.ref.update({ authUid: user.uid });
+                            await updateDoc(clientDoc.ref, { authUid: user.uid });
                         }
 
                         authContainer.classList.add('hidden');
@@ -772,14 +813,14 @@
                         showView('dashboard-view');
                     } else {
                         console.warn("Client user without profile found, logging out.");
-                        auth.signOut();
+                        signOut(auth);
                     }
                 } else {
-                    auth.signOut();
+                    signOut(auth);
                 }
 
             } else {
-                state.currentUser = null;
+                state.authUser = null;
                 state.userProfile = null;
                 state.userType = null;
                 appContainer.classList.add('hidden');
@@ -790,14 +831,21 @@
         });
 
         const init = async () => {
+            // Lógica de registro del Service Worker más robusta
             if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    // Use an absolute path to prevent cross-origin issues in some environments.
-                    const serviceWorkerUrl = `${window.location.origin}/service-worker.js`;
-                    navigator.serviceWorker.register(serviceWorkerUrl)
+                const registerSW = () => {
+                    // Usar una ruta relativa al documento actual para evitar errores de origen.
+                    navigator.serviceWorker.register('./service-worker.js')
                         .then(reg => console.log('✅ SW registered at scope:', reg.scope))
                         .catch(err => console.error('❌ SW registration failed:', err));
-                });
+                };
+
+                // Esto maneja el caso donde el script se carga después de que la página se haya cargado por completo.
+                if (document.readyState === 'complete') {
+                    registerSW();
+                } else {
+                    window.addEventListener('load', registerSW);
+                }
             }
 
             await loadSplashScreenConfig();
@@ -853,7 +901,6 @@
         };
 
         init();
-    });
     </script>
 </body>
 </html>
