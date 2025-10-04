@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loyalfly - Guía de Estilo</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-bg': '#18181B', 'dark-surface': '#27272A', 'menta': '#34D399',
+                        'oro-suave': '#FBBF24', 'light-text': '#F4F4F5', 'subtle-text': '#A1A1AA',
+                    },
+                    fontFamily: {
+                        'mono-card': ['"Special Elite"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #18181B; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        ::placeholder { color: #52525B; }
+    </style>
+</head>
+<body class="text-light-text antialiased">
+
+    <div class="max-w-5xl mx-auto p-8 md:p-12">
+        <header class="border-b border-dark-surface pb-8 mb-12">
+            <h1 class="text-5xl font-bold text-menta">Loyalfly</h1>
+            <p class="text-2xl text-subtle-text mt-2">Guía de Estilo Visual</p>
+        </header>
+
+        <main class="space-y-16">
+            <!-- SECCIÓN DE COLORES -->
+            <section>
+                <h2 class="text-3xl font-bold mb-6 border-l-4 border-menta pl-4">Paleta de Colores</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <!-- Color Menta -->
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-lg bg-menta shadow-lg"></div>
+                        <p class="font-bold">Menta (Principal)</p>
+                        <p class="text-sm text-subtle-text">#34D399</p>
+                    </div>
+                    <!-- Color Dark BG -->
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-lg bg-dark-bg shadow-lg border border-dark-surface"></div>
+                        <p class="font-bold">Fondo Oscuro</p>
+                        <p class="text-sm text-subtle-text">#18181B</p>
+                    </div>
+                    <!-- Color Dark Surface -->
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-lg bg-dark-surface shadow-lg"></div>
+                        <p class="font-bold">Superficie Oscura</p>
+                        <p class="text-sm text-subtle-text">#27272A</p>
+                    </div>
+                    <!-- Color Oro Suave -->
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-lg bg-oro-suave shadow-lg"></div>
+                        <p class="font-bold">Oro Suave (Acento)</p>
+                        <p class="text-sm text-subtle-text">#FBBF24</p>
+                    </div>
+                    <!-- Color Light Text -->
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-lg bg-light-text shadow-lg"></div>
+                        <p class="font-bold text-dark-bg">Texto Claro</p>
+                        <p class="text-sm text-subtle-text">#F4F4F5</p>
+                    </div>
+                    <!-- Color Subtle Text -->
+                    <div class="space-y-2">
+                        <div class="h-24 rounded-lg bg-subtle-text shadow-lg"></div>
+                        <p class="font-bold">Texto Sutil</p>
+                        <p class="text-sm text-subtle-text">#A1A1AA</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN DE TIPOGRAFÍA -->
+            <section>
+                <h2 class="text-3xl font-bold mb-6 border-l-4 border-menta pl-4">Tipografía</h2>
+                <div class="space-y-8">
+                    <div>
+                        <p class="text-sm text-subtle-text mb-2">Heading 1 (5xl, bold)</p>
+                        <h1 class="text-5xl font-bold text-menta">Loyalfly</h1>
+                    </div>
+                    <div>
+                        <p class="text-sm text-subtle-text mb-2">Heading 2 (3xl, bold)</p>
+                        <h2 class="text-3xl font-bold">Acceso de Negocio</h2>
+                    </div>
+                    <div>
+                        <p class="text-sm text-subtle-text mb-2">Texto de Párrafo (base)</p>
+                        <p class="max-w-2xl">Una PWA de cartera de lealtad multi-marca con un diseño minimalista e intuitivo. Permite a los clientes consultar sus tarjetas y a los negocios administrar sus programas.</p>
+                    </div>
+                     <div>
+                        <p class="text-sm text-subtle-text mb-2">Fuente para Nombre en Tarjeta (font-mono-card)</p>
+                        <p class="font-mono-card text-lg tracking-wider uppercase">Ana Torres</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN DE COMPONENTES -->
+            <section>
+                <h2 class="text-3xl font-bold mb-6 border-l-4 border-menta pl-4">Componentes de UI</h2>
+                <div class="space-y-12">
+                    <!-- Botones -->
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4">Botones</h3>
+                        <div class="flex flex-wrap items-center gap-4">
+                            <button class="bg-menta text-dark-bg py-3 px-6 rounded-lg font-bold text-lg shadow-md hover:bg-green-300 transition">Botón Primario</button>
+                            <button class="bg-zinc-600 text-light-text py-2 px-4 rounded-lg hover:bg-zinc-500 transition">Botón Secundario</button>
+                            <a href="#" class="text-sm text-menta hover:underline">Botón de Enlace</a>
+                        </div>
+                    </div>
+
+                    <!-- Campos de Entrada -->
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4">Campo de Entrada</h3>
+                        <div class="max-w-sm">
+                            <label for="style-guide-input" class="block text-sm font-medium text-subtle-text mb-2">Tu número de teléfono</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-subtle-text sm:text-sm">+52</span></div>
+                                <input type="tel" id="style-guide-input" class="block w-full rounded-lg bg-dark-surface border-dark-surface pl-12 py-3 focus:border-menta focus:ring-menta sm:text-lg" placeholder="55 1234 5678">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjetas -->
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4">Tarjetas</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Tarjeta de Cliente -->
+                            <div class="space-y-2">
+                                <p class="text-sm text-subtle-text">Tarjeta de Cliente</p>
+                                <div class="rounded-xl shadow-lg p-5 flex flex-col justify-between h-52 text-light-text" style="background-color: #1E40AF;">
+                                    <header class="flex justify-between items-start">
+                                        <h3 class="uppercase tracking-wider text-lg font-bold">Café Estelar</h3>
+                                        <div class="font-semibold text-menta">Loyalfly</div>
+                                    </header>
+                                    <main class="flex items-center justify-between mt-2">
+                                        <div>
+                                            <p class="text-4xl font-semibold">8<span class="text-2xl text-subtle-text">/10</span></p>
+                                            <p class="text-sm text-subtle-text">Sellos</p>
+                                        </div>
+                                        <div class="relative w-20 h-20 flex-shrink-0">
+                                            <svg class="w-full h-full" viewBox="0 0 80 80">
+                                                <circle class="text-white/20" stroke-width="8" stroke="currentColor" fill="transparent" r="35" cx="40" cy="40"/>
+                                                <circle class="text-menta" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="35" cx="40" cy="40" style="stroke-dasharray: 219.911; stroke-dashoffset: 43.982; transform: rotate(-90deg); transform-origin: 50% 50%;"/>
+                                            </svg>
+                                            <span class="absolute inset-0 flex items-center justify-center text-lg font-bold">80%</span>
+                                        </div>
+                                    </main>
+                                    <footer class="mt-auto pt-2">
+                                        <p class="font-mono-card text-lg tracking-wider uppercase">Juan Pérez</p>
+                                    </footer>
+                                </div>
+                            </div>
+                            <!-- Fila de Cliente (Cajero) -->
+                            <div class="space-y-2">
+                                <p class="text-sm text-subtle-text">Fila de Cliente (Panel de Cajero)</p>
+                                <div class="bg-dark-surface rounded-lg shadow-sm p-4 flex items-center justify-between">
+                                    <div>
+                                        <p class="font-semibold text-light-text">Ana Torres</p>
+                                        <p class="text-sm text-subtle-text">+525512345678</p>
+                                        <p class="text-sm font-medium text-menta mt-1">8 / 10 sellos</p>
+                                    </div>
+                                    <button class="add-stamp-btn bg-menta text-dark-bg py-3 px-5 rounded-lg font-bold shadow-md hover:bg-green-300 transition">+1 Sello</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="text-center text-subtle-text mt-20 border-t border-dark-surface pt-8">
+            <p>&copy; 2024 Loyalfly. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+
+</body>
+</html>
